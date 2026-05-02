@@ -15,9 +15,9 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }} className="owner-layout">
+    <div className="owner-layout" style={{ minHeight: '100vh' }}>
       {/* Desktop Sidebar */}
-      <div className="hide-mobile" style={{ display: 'flex' }}>
+      <div className="hide-mobile flex-start">
         <OwnerSidebar />
       </div>
 

@@ -39,7 +39,7 @@ export default async function TenantDashboardPage() {
       {/* Current Bill Spotlight */}
       {currentBill && (
         <div style={{
-          background: 'linear-gradient(135deg, #4338ca 0%, #7c3aed 100%)',
+          background: 'linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 100%)',
           borderRadius: '1rem',
           padding: '1.5rem 2rem',
           marginBottom: '1.5rem',
@@ -48,13 +48,13 @@ export default async function TenantDashboardPage() {
           overflow: 'hidden',
         }}>
           <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
-          <p style={{ fontSize: '0.8rem', opacity: 0.75, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <p className="section-title" style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '0.25rem' }}>
             {currentBill.period_label} · {currentBill.is_paid ? '✅ Paid' : '⚠️ Unpaid'}
           </p>
           <p style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.75rem' }}>
             {formatPeso(currentBill.total_due)}
           </p>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: '0.8rem', opacity: 0.85 }}>
+          <div className="flex-start" style={{ flexWrap: 'wrap', fontSize: '0.8rem', opacity: 0.85, gap: '1.25rem' }}>
             <span>🏠 Rent: {formatPeso(currentBill.rent_amount)}</span>
             <span>⚡ Electric: {formatPeso(currentBill.electric_amount)}</span>
             <span>💧 Water: {formatPeso(currentBill.water_amount)}</span>
@@ -77,44 +77,44 @@ export default async function TenantDashboardPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
         {/* Wallet */}
         <div className="stat-card">
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Credit Balance</p>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: tenant.credit_balance > 0 ? '#10b981' : 'var(--text-primary)' }}>
+          <p className="section-title">Credit Balance</p>
+          <p className="font-bold" style={{ fontSize: '1.5rem', color: tenant.credit_balance > 0 ? 'var(--success)' : 'var(--text-primary)' }}>
             {formatPeso(tenant.credit_balance)}
           </p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Advance payments / overpayments</p>
+          <p className="text-muted text-xs" style={{ marginTop: '0.25rem' }}>Advance payments / overpayments</p>
         </div>
 
         {/* Arrears */}
         <div className="stat-card">
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Outstanding Arrears</p>
-          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: tenant.arrears > 0 ? '#ef4444' : '#10b981' }}>
+          <p className="section-title">Outstanding Arrears</p>
+          <p className="font-bold" style={{ fontSize: '1.5rem', color: tenant.arrears > 0 ? 'var(--danger)' : 'var(--success)' }}>
             {formatPeso(tenant.arrears)}
           </p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{tenant.arrears > 0 ? 'Will be added to your next bill' : 'No outstanding balance 🎉'}</p>
+          <p className="text-muted text-xs" style={{ marginTop: '0.25rem' }}>{tenant.arrears > 0 ? 'Will be added to your next bill' : 'No outstanding balance 🎉'}</p>
         </div>
       </div>
 
       {/* My Plan & Rates */}
       <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontWeight: 600, marginBottom: '1rem', fontSize: '1rem' }}>My Plan & Rates</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Base Rent</p>
-            <p style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>{formatPeso(unit.base_rent)}<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>/mo</span></p>
+        <h2 className="font-semibold text-sm" style={{ marginBottom: '1rem' }}>My Plan & Rates</h2>
+        <div className="grid-cols-auto" style={{ '--min-w': '200px' } as React.CSSProperties}>
+          <div className="card-sm">
+            <p className="section-title">Base Rent</p>
+            <p className="text-lg font-semibold text-primary">{formatPeso(unit.base_rent)}<span className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 400 }}>/mo</span></p>
           </div>
-          <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>WiFi</p>
-            <p style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
-              {tenant.has_wifi ? <>{formatPeso(tenant.wifi_rate)}<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>/mo</span></> : 'Opted Out'}
+          <div className="card-sm">
+            <p className="section-title">WiFi</p>
+            <p className="text-lg font-semibold text-primary">
+              {tenant.has_wifi ? <>{formatPeso(tenant.wifi_rate)}<span className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 400 }}>/mo</span></> : 'Opted Out'}
             </p>
           </div>
-          <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Water Mode</p>
-            <p style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem', textTransform: 'capitalize' }}>
-              {tenant.water_mode} {tenant.water_mode === 'tank' && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>({formatPeso(tenant.water_tank_rate)}/refill)</span>}
+          <div className="card-sm">
+            <p className="section-title">Water Mode</p>
+            <p className="text-lg font-semibold text-primary" style={{ textTransform: 'capitalize' }}>
+              {tenant.water_mode} {tenant.water_mode === 'tank' && <span className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 400 }}>({formatPeso(tenant.water_tank_rate)}/refill)</span>}
             </p>
           </div>
         </div>
@@ -123,10 +123,10 @@ export default async function TenantDashboardPage() {
       {/* Water Supply Card */}
       {tenant.water_mode === 'tank' && (
         <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(59,130,246,0.05)', borderColor: 'rgba(59,130,246,0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <h2 style={{ fontWeight: 600, fontSize: '1rem', color: '#1e40af', marginBottom: '0.25rem' }}>Water Supply</h2>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+              <h2 className="font-semibold text-primary" style={{ color: '#1e40af', marginBottom: '0.25rem' }}>Water Supply</h2>
+              <p className="text-sm text-secondary">
                 Your unit uses a water tank. Request a refill when running low. Cost per refill is {formatPeso(tenant.water_tank_rate)}.
               </p>
             </div>

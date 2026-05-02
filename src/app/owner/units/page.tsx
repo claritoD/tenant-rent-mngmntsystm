@@ -28,9 +28,25 @@ export default async function UnitsPage() {
         <AddUnitToggle />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-        {(units ?? []).map(unit => (
-          <div key={unit.id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
+        {units?.map((unit) => (
+          <div key={unit.id} className="card animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="flex-between">
+              <div className="flex-start">
+                <div style={{ padding: '0.5rem', background: 'rgba(99,102,241,0.1)', borderRadius: '0.5rem' }}>
+                  <Home size={18} color="var(--brand-500)" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-primary">{unit.unit_name}</h3>
+                  <p className="text-muted text-xs">Standard Unit</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-primary">{formatPeso(unit.base_rent)}</p>
+                <p className="text-muted text-xs">Monthly Rent</p>
+              </div>
+            </div>
+
             {/* Image Header */}
             <div style={{
               height: '160px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)',

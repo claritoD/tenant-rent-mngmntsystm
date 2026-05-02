@@ -17,7 +17,7 @@ export default async function TenantsPage() {
   return (
     <div className="animate-enter">
       {/* Header row with Add Tenant button */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+      <div className="flex-between" style={{ marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <div className="page-header" style={{ margin: 0 }}>
           <h1>Tenants</h1>
           <p>Manage all tenants and their unit assignments.</p>

@@ -63,7 +63,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
                   display: 'flex', alignItems: 'center', gap: '0.4rem',
                   padding: '0.5rem 1rem', borderRadius: '0.5rem',
                   textDecoration: 'none', fontSize: '0.875rem', fontWeight: isActive ? 600 : 400,
-                  color: isActive ? '#6366f1' : 'var(--text-secondary)',
+                  color: isActive ? 'var(--brand-500)' : 'var(--text-secondary)',
                   background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
                   transition: 'all 0.15s',
                 }}>
@@ -118,7 +118,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
                   padding: '1rem', borderRadius: '0.75rem',
                   textDecoration: 'none', fontSize: '1rem', fontWeight: isActive ? 600 : 400,
                   color: isActive ? '#fff' : 'var(--text-secondary)',
-                  background: isActive ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'var(--bg-base)',
+                  background: isActive ? 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' : 'var(--bg-base)',
                   border: '1px solid var(--border)',
                 }}>
                 <Icon size={20} />

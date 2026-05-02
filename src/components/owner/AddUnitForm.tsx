@@ -12,6 +12,7 @@ interface Props {
 const DEFAULT_FORM = {
   unit_name: '',
   base_rent: '',
+  map_location_url: '',
 };
 
 export function AddUnitForm({ onClose }: Props) {
@@ -19,7 +20,6 @@ export function AddUnitForm({ onClose }: Props) {
   const supabase = createClient();
   const [form, setForm] = useState(DEFAULT_FORM);
   const [interiorFiles, setInteriorFiles] = useState<File[]>([]);
-  const [mapFile, setMapFile] = useState<File | null>(null);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -60,13 +60,7 @@ export function AddUnitForm({ onClose }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // 2. Upload Map Location Photo
-      let mapUrl: string | null = null;
-      if (mapFile) {
-        mapUrl = await uploadFile(mapFile, 'maps');
-      }
-
-      // 3. Upload Interior Photos
+      // 2. Upload Interior Photos
       const interiorUrls: string[] = [];
       for (const file of interiorFiles) {
         const url = await uploadFile(file, 'interiors');
@@ -78,7 +72,7 @@ export function AddUnitForm({ onClose }: Props) {
         unit_name: form.unit_name.trim(),
         base_rent: parseFloat(form.base_rent || '0'),
         interior_photos: interiorUrls,
-        map_location_url: mapUrl,
+        map_location_url: form.map_location_url.trim() || null,
       });
 
       if (insertError) throw insertError;
@@ -86,7 +80,6 @@ export function AddUnitForm({ onClose }: Props) {
       setSuccess(`✅ ${form.unit_name} added successfully!`);
       setForm(DEFAULT_FORM);
       setInteriorFiles([]);
-      setMapFile(null);
       router.refresh();
       
       if (onClose) {
@@ -162,23 +155,12 @@ export function AddUnitForm({ onClose }: Props) {
           <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Photos & Media</p>
           
           <div style={{ ...gridTwo }}>
-            {/* Map Photo */}
+            {/* Map URL */}
             <div>
-              <label style={labelStyle}>Map Location Photo</label>
-              <div style={{
-                border: '1px dashed var(--border)', borderRadius: '0.5rem', padding: '1rem',
-                textAlign: 'center', background: 'var(--bg-surface)'
-              }}>
-                <input type="file" accept="image/*" id="map-upload"
-                  onChange={e => setMapFile(e.target.files?.[0] || null)}
-                  style={{ display: 'none' }} />
-                <label htmlFor="map-upload" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                  <Upload size={20} color="var(--text-muted)" />
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    {mapFile ? mapFile.name : 'Click to select map photo'}
-                  </span>
-                </label>
-              </div>
+              <label style={labelStyle} htmlFor="u-map">Map Location (Google Maps URL)</label>
+              <input id="u-map" type="url" style={inputStyle}
+                value={form.map_location_url} onChange={e => set('map_location_url', e.target.value)}
+                placeholder="https://maps.google.com/..." />
             </div>
 
             {/* Interior Photos */}
@@ -206,7 +188,7 @@ export function AddUnitForm({ onClose }: Props) {
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
             padding: '0.75rem', borderRadius: '0.5rem', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-            background: loading ? '#6d28d9' : 'linear-gradient(135deg, #8b5cf6, #d946ef)',
+            background: loading ? 'var(--brand-700)' : 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
             color: '#fff', fontWeight: 600, fontSize: '0.9rem',
             boxShadow: loading ? 'none' : '0 4px 16px rgba(139,92,246,0.35)',
             marginTop: '0.5rem',

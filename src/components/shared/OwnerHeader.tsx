@@ -22,7 +22,7 @@ export function OwnerHeader() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               width: '32px', height: '32px',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              background: 'linear-gradient(135deg, var(--brand-500), var(--brand-600))',
               borderRadius: '8px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
