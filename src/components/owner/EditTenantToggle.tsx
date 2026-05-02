@@ -16,8 +16,11 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
     water_mode: tenant.water_mode,
     water_tank_rate: tenant.water_tank_rate,
     has_wifi: tenant.has_wifi,
+    wifi_rate: tenant.wifi_rate || 0,
     arrears: tenant.arrears,
     credit_balance: tenant.credit_balance,
+    start_electric_reading: tenant.start_electric_reading || 0,
+    start_water_reading: tenant.start_water_reading || 0,
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -111,10 +114,17 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
                       onChange={e => setFormData({...formData, has_wifi: e.target.checked})} 
                       style={{ width: '22px', height: '22px', accentColor: '#6366f1', cursor: 'pointer' }} 
                     />
-                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Subscribed to WiFi</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Subscribed</span>
                   </div>
                 </div>
               </div>
+
+              {formData.has_wifi && (
+                <div className="input-group">
+                  <label className="label">Monthly WiFi Rate (₱)</label>
+                  <input className="input" type="number" value={formData.wifi_rate} onChange={e => setFormData({...formData, wifi_rate: parseFloat(e.target.value)})} />
+                </div>
+              )}
 
               <div style={{ background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
                 <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Water Billing Mode</p>
@@ -125,16 +135,33 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
                     <input type="radio" name="water_mode" checked={formData.water_mode === 'tank'} onChange={() => setFormData({...formData, water_mode: 'tank'})} style={{ accentColor: '#6366f1' }} />
-                    Fixed Tank Rate
+                    Water Tank
                   </label>
                 </div>
                 {formData.water_mode === 'tank' && (
                   <div className="input-group">
-                    <label className="label">Monthly Tank Rate (₱)</label>
+                    <label className="label">Price per Refill (₱)</label>
                     <input className="input" type="number" value={formData.water_tank_rate} onChange={e => setFormData({...formData, water_tank_rate: parseFloat(e.target.value)})} />
                   </div>
                 )}
               </div>
+
+              <div style={{ background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Starting Meter Readings (Move-in)</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label className="label">Starting Electric (kWh)</label>
+                    <input className="input" type="number" value={formData.start_electric_reading} onChange={e => setFormData({...formData, start_electric_reading: parseFloat(e.target.value)})} />
+                  </div>
+                  {formData.water_mode === 'metered' && (
+                    <div className="input-group">
+                      <label className="label">Starting Water (m³)</label>
+                      <input className="input" type="number" value={formData.start_water_reading} onChange={e => setFormData({...formData, start_water_reading: parseFloat(e.target.value)})} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
 
               <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', padding: '1rem 0', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
                 <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.875rem' }}>

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import type { Tenant } from '@/types/database.types';
 
-type TenantBasic = Pick<Tenant, 'id' | 'name' | 'water_mode'>;
+type TenantBasic = Pick<Tenant, 'id' | 'name' | 'water_mode' | 'unit_id' | 'start_electric_reading' | 'start_water_reading'>;
 
 interface Props {
   tenants: TenantBasic[];
@@ -24,8 +24,50 @@ export default function MeterReadingForm({ tenants }: Props) {
     return d.toISOString().split('T')[0];
   });
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Auto-fetch last reading based on Tenant or Unit
+  useEffect(() => {
+    async function fetchLastReading() {
+      if (!tenantId || !type) return;
+      
+      const selectedTenant = tenants.find(t => t.id === tenantId);
+      if (!selectedTenant) return;
+
+      setFetching(true);
+      const supabase = createClient();
+      
+      // 1. Check for the LATEST reading for this specific TENANT
+      const { data, error } = await supabase
+        .from('meter_readings')
+        .select('curr_reading, rate_per_unit')
+        .eq('tenant_id', tenantId)
+        .eq('type', type)
+        .order('reading_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data) {
+        // We have a previous reading for this tenant
+        setPrevReading(data.curr_reading.toString());
+        if (!ratePerUnit || ratePerUnit === '0') setRatePerUnit(data.rate_per_unit.toString());
+      } else {
+        // 2. NO history for this tenant -> Use their Move-in Starting Reading
+        const startingVal = type === 'electric' 
+          ? selectedTenant.start_electric_reading 
+          : selectedTenant.start_water_reading;
+        
+        setPrevReading((startingVal ?? 0).toString());
+      }
+      setFetching(false);
+    }
+
+    fetchLastReading();
+  }, [tenantId, type, tenants]); 
+
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,14 +165,17 @@ export default function MeterReadingForm({ tenants }: Props) {
           <>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <div>
-                <label className="label" htmlFor="prev-reading">Previous Reading</label>
+                <label className="label" htmlFor="prev-reading">
+                  Previous Reading {fetching && <span style={{ fontSize: '0.7rem', color: '#6366f1' }}>(fetching...)</span>}
+                </label>
                 <input id="prev-reading" type="number" step="0.01" min="0" className="input" required
-                  value={prevReading} onChange={e => setPrevReading(e.target.value)} placeholder="e.g. 1240" />
+                  disabled={fetching}
+                  value={prevReading} onChange={e => setPrevReading(e.target.value)} placeholder="0.00" />
               </div>
               <div>
                 <label className="label" htmlFor="curr-reading">Current Reading</label>
                 <input id="curr-reading" type="number" step="0.01" min="0" className="input" required
-                  value={currReading} onChange={e => setCurrReading(e.target.value)} placeholder="e.g. 1280" />
+                  value={currReading} onChange={e => setCurrReading(e.target.value)} placeholder="0.00" />
               </div>
             </div>
 

@@ -12,7 +12,6 @@ interface Props {
 const DEFAULT_FORM = {
   unit_name: '',
   base_rent: '',
-  wifi_rate: '',
 };
 
 export function AddUnitForm({ onClose }: Props) {
@@ -78,7 +77,6 @@ export function AddUnitForm({ onClose }: Props) {
       const { error: insertError } = await supabase.from('units').insert({
         unit_name: form.unit_name.trim(),
         base_rent: parseFloat(form.base_rent || '0'),
-        wifi_rate: parseFloat(form.wifi_rate || '0'),
         interior_photos: interiorUrls,
         map_location_url: mapUrl,
       });
@@ -152,17 +150,11 @@ export function AddUnitForm({ onClose }: Props) {
               value={form.unit_name} onChange={e => set('unit_name', e.target.value)}
               placeholder="e.g., Apt 101, Room A" />
           </div>
-          <div>
+          <div style={{ gridColumn: '1 / -1' }}>
             <label style={labelStyle} htmlFor="u-rent">Base Rent (₱) *</label>
             <input id="u-rent" type="number" step="0.01" min="0" required style={inputStyle}
               value={form.base_rent} onChange={e => set('base_rent', e.target.value)}
               placeholder="0.00" />
-          </div>
-          <div>
-            <label style={labelStyle} htmlFor="u-wifi">WiFi Rate (₱/mo)</label>
-            <input id="u-wifi" type="number" step="0.01" min="0" style={inputStyle}
-              value={form.wifi_rate} onChange={e => set('wifi_rate', e.target.value)}
-              placeholder="Optional flat rate" />
           </div>
         </div>
 

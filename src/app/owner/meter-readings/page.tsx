@@ -9,7 +9,7 @@ export default async function MeterReadingsPage() {
   const supabase = await createClient();
 
   const [{ data: tenants }, { data: readings }] = await Promise.all([
-    supabase.from('tenants').select('id, name, water_mode').eq('is_active', true).order('name'),
+    supabase.from('tenants').select('id, name, water_mode, unit_id, start_electric_reading, start_water_reading').eq('is_active', true).order('name'),
     supabase.from('meter_readings')
       .select('*, tenant:tenants(name)')
       .order('reading_date', { ascending: false })

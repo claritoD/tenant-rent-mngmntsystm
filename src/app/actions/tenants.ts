@@ -59,6 +59,13 @@ export async function quickStartTenant(data: {
   password: string;
   unit_id: string;
   move_in_date: string;
+  has_wifi?: boolean;
+  wifi_rate?: number;
+  water_mode?: 'tank' | 'metered';
+  water_tank_rate?: number;
+  security_deposit?: number;
+  start_electric_reading?: number;
+  start_water_reading?: number;
   payments: HistoricalPayment[];
 }) {
   try {
@@ -86,6 +93,13 @@ export async function quickStartTenant(data: {
       name: data.name,
       unit_id: data.unit_id,
       move_in_date: data.move_in_date,
+      has_wifi: data.has_wifi ?? false,
+      wifi_rate: data.wifi_rate ?? 0,
+      water_mode: data.water_mode ?? 'tank',
+      water_tank_rate: data.water_tank_rate ?? 0,
+      security_deposit: data.security_deposit ?? 0,
+      start_electric_reading: data.start_electric_reading ?? 0,
+      start_water_reading: data.start_water_reading ?? 0,
       is_active: true
     });
 

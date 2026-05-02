@@ -107,21 +107,16 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="input-group">
-                  <label className="label">WiFi Rate (₱)</label>
-                  <input className="input" type="number" value={formData.wifi_rate} onChange={e => setFormData({...formData, wifi_rate: parseFloat(e.target.value)})} />
-                </div>
-                <div className="input-group">
-                  <label className="label">Map Location URL</label>
-                  <input 
-                    className="input" 
-                    placeholder="Google Maps link..."
-                    value={formData.map_location_url} 
-                    onChange={e => setFormData({...formData, map_location_url: e.target.value})} 
-                  />
-                </div>
+              <div className="input-group">
+                <label className="label">Map Location URL (Google Maps)</label>
+                <input 
+                  className="input" 
+                  placeholder="https://maps.google.com/..."
+                  value={formData.map_location_url} 
+                  onChange={e => setFormData({...formData, map_location_url: e.target.value})} 
+                />
               </div>
+
 
               {/* Photo Section */}
               <div style={{ background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>

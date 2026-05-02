@@ -42,12 +42,15 @@ export async function POST(request: Request) {
       unit_id,
       move_in_date,
       has_wifi = false,
+      wifi_rate = 0,
       water_mode = 'tank',
       water_tank_rate = 0,
       security_deposit = 0,
       is_existing = false,
       arrears = 0,
       credit_balance = 0,
+      start_electric_reading = 0,
+      start_water_reading = 0,
     } = body;
 
     if (!name || !email || !password || !unit_id || !move_in_date) {
@@ -81,12 +84,15 @@ export async function POST(request: Request) {
       unit_id,
       move_in_date,
       has_wifi,
+      wifi_rate: Number(wifi_rate),
       water_mode,
       water_tank_rate: Number(water_tank_rate),
       security_deposit: Number(security_deposit),
       // For existing tenants carry over their financial state
       arrears: is_existing ? Number(arrears) : 0,
       credit_balance: is_existing ? Number(credit_balance) : 0,
+      start_electric_reading: Number(start_electric_reading),
+      start_water_reading: Number(start_water_reading),
       is_active: true,
     });
 

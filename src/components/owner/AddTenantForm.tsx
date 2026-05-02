@@ -19,11 +19,14 @@ const DEFAULT_FORM = {
   unit_id: '',
   move_in_date: new Date().toISOString().split('T')[0],
   has_wifi: false,
+  wifi_rate: '',
   water_mode: 'tank' as 'tank' | 'metered',
   water_tank_rate: '',
   security_deposit: '',
   arrears: '',
   credit_balance: '',
+  start_electric_reading: '',
+  start_water_reading: '',
 };
 
 export function AddTenantForm({ units, onClose }: Props) {
@@ -60,12 +63,15 @@ export function AddTenantForm({ units, onClose }: Props) {
         unit_id: form.unit_id,
         move_in_date: form.move_in_date,
         has_wifi: form.has_wifi,
+        wifi_rate: parseFloat(form.wifi_rate || '0'),
         water_mode: form.water_mode,
         water_tank_rate: parseFloat(form.water_tank_rate || '0'),
         security_deposit: parseFloat(form.security_deposit || '0'),
         is_existing: mode === 'existing',
         arrears: parseFloat(form.arrears || '0'),
         credit_balance: parseFloat(form.credit_balance || '0'),
+        start_electric_reading: parseFloat(form.start_electric_reading || '0'),
+        start_water_reading: parseFloat(form.start_water_reading || '0'),
       }),
     });
 
@@ -229,22 +235,57 @@ export function AddTenantForm({ units, onClose }: Props) {
             {/* Tank rate */}
             {form.water_mode === 'tank' && (
               <div>
-                <label style={labelStyle} htmlFor="t-tankrate">Tank Rate per Month (₱)</label>
+                <label style={labelStyle} htmlFor="t-tankrate">Price per Refill (₱)</label>
                 <input id="t-tankrate" type="number" step="0.01" min="0" style={inputStyle}
                   value={form.water_tank_rate} onChange={e => set('water_tank_rate', e.target.value)}
-                  placeholder="e.g. 200" />
+                  placeholder="e.g. 100" />
               </div>
             )}
           </div>
           {/* WiFi toggle */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginTop: '0.75rem', userSelect: 'none' }}>
-            <input id="t-wifi" type="checkbox" checked={form.has_wifi}
-              onChange={e => set('has_wifi', e.target.checked)}
-              style={{ width: '16px', height: '16px', accentColor: '#6366f1' }} />
-            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-              📶 Has WiFi subscription (rate set per unit)
-            </span>
-          </label>
+          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', userSelect: 'none' }}>
+              <input id="t-wifi" type="checkbox" checked={form.has_wifi}
+                onChange={e => set('has_wifi', e.target.checked)}
+                style={{ width: '16px', height: '16px', accentColor: '#6366f1' }} />
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                📶 Subscribed to WiFi
+              </span>
+            </label>
+            
+            {form.has_wifi && (
+              <div className="animate-enter">
+                <label style={labelStyle} htmlFor="t-wifirate">Monthly WiFi Rate (₱)</label>
+                <input id="t-wifirate" type="number" step="0.01" min="0" style={inputStyle}
+                  value={form.wifi_rate} onChange={e => set('wifi_rate', e.target.value)}
+                  placeholder="e.g. 300" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Section: Starting Meters ── */}
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Move-in Meter Readings</p>
+          <div style={{ ...gridTwo }}>
+            <div>
+              <label style={labelStyle} htmlFor="t-startelec">Starting Electric (kWh)</label>
+              <input id="t-startelec" type="number" step="0.01" min="0" style={inputStyle}
+                value={form.start_electric_reading} onChange={e => set('start_electric_reading', e.target.value)}
+                placeholder="0.00" />
+            </div>
+            {form.water_mode === 'metered' && (
+              <div>
+                <label style={labelStyle} htmlFor="t-startwater">Starting Water (m³)</label>
+                <input id="t-startwater" type="number" step="0.01" min="0" style={inputStyle}
+                  value={form.start_water_reading} onChange={e => set('start_water_reading', e.target.value)}
+                  placeholder="0.00" />
+              </div>
+            )}
+          </div>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            Enter the meter readings exactly as they appear when the tenant moves in. This prevents billing them for previous usage.
+          </p>
         </div>
 
         {/* ── Section: Existing Tenant Financial State ── */}

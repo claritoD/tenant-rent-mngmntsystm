@@ -87,8 +87,9 @@ export function computeBill(
   waterRefills: WaterRefill[] = []
 ): BillBreakdown {
   const rent = unit.base_rent;
-  const wifi = tenant.has_wifi ? unit.wifi_rate : 0;
+  const wifi = tenant.has_wifi ? (tenant.wifi_rate || 0) : 0;
   const electric = electricReading ? calcUtilityAmount(electricReading) : 0;
+
 
   let water = 0;
   if (tenant.water_mode === 'metered' && waterReading) {
