@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, X, Save } from 'lucide-react';
+import { Settings, X, Save, User } from 'lucide-react';
 import { updateTenant } from '@/app/actions/tenants';
 import type { Tenant, Unit } from '@/types/database.types';
 
@@ -34,24 +34,39 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
       <button 
         onClick={() => setOpen(true)}
         className="btn btn-ghost" 
-        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderRadius: '0.5rem' }}
       >
         <Settings size={18} /> Edit Tenant
       </button>
 
       {open && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
-          backdropFilter: 'blur(4px)'
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          backdropFilter: 'blur(8px)', padding: '1.5rem'
         }}>
-          <div className="card" style={{ width: '100%', maxWidth: '500px', margin: '1rem', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1, paddingBottom: '0.5rem' }}>
-              <h2 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Edit Tenant Details</h2>
-              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+          <div className="card" style={{ 
+            width: '100%', maxWidth: '550px', maxHeight: '100%', overflowY: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1)',
+            position: 'relative', border: '1px solid var(--border)'
+          }}>
+            <div style={{ 
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: '1.5rem', position: 'sticky', top: 0, background: 'var(--bg-card)', 
+              zIndex: 10, padding: '0.5rem 0'
+            }}>
+              <h2 style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <User size={20} /> Edit Tenant Profile
+              </h2>
+              <button 
+                onClick={() => setOpen(false)} 
+                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', display: 'flex' }}
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div className="input-group">
                 <label className="label">Full Name</label>
                 <input className="input" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
@@ -89,23 +104,28 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
                 </div>
                 <div className="input-group">
                   <label className="label">WiFi Access</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '100%' }}>
-                    <input type="checkbox" checked={formData.has_wifi} onChange={e => setFormData({...formData, has_wifi: e.target.checked})} style={{ width: '20px', height: '20px' }} />
-                    <span style={{ fontSize: '0.875rem' }}>Subscribed to WiFi</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', height: '100%', padding: '0 0.5rem' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formData.has_wifi} 
+                      onChange={e => setFormData({...formData, has_wifi: e.target.checked})} 
+                      style={{ width: '22px', height: '22px', accentColor: '#6366f1', cursor: 'pointer' }} 
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Subscribed to WiFi</span>
                   </div>
                 </div>
               </div>
 
-              <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
-                <p style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.75rem' }}>Water Billing Mode</p>
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input type="radio" name="water_mode" checked={formData.water_mode === 'metered'} onChange={() => setFormData({...formData, water_mode: 'metered'})} />
-                    <span style={{ fontSize: '0.85rem' }}>Metered</span>
+              <div style={{ background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Water Billing Mode</p>
+                <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    <input type="radio" name="water_mode" checked={formData.water_mode === 'metered'} onChange={() => setFormData({...formData, water_mode: 'metered'})} style={{ accentColor: '#6366f1' }} />
+                    Metered
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input type="radio" name="water_mode" checked={formData.water_mode === 'tank'} onChange={() => setFormData({...formData, water_mode: 'tank'})} />
-                    <span style={{ fontSize: '0.85rem' }}>Fixed Tank Rate</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    <input type="radio" name="water_mode" checked={formData.water_mode === 'tank'} onChange={() => setFormData({...formData, water_mode: 'tank'})} style={{ accentColor: '#6366f1' }} />
+                    Fixed Tank Rate
                   </label>
                 </div>
                 {formData.water_mode === 'tank' && (
@@ -116,9 +136,11 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
                 )}
               </div>
 
-              <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.8rem', marginTop: '0.5rem' }}>
-                {loading ? 'Saving...' : <><Save size={18} /> Update Tenant Details</>}
-              </button>
+              <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', padding: '1rem 0', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+                <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
+                  {loading ? 'Saving Changes...' : <><Save size={20} /> Update Tenant Details</>}
+                </button>
+              </div>
             </form>
           </div>
         </div>

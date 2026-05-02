@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-
 import { Settings, X, Save, Image as ImageIcon, Trash2, Upload, Loader2 } from 'lucide-react';
 import { updateUnit } from '@/app/actions/units';
 import { createClient } from '@/lib/supabase/client';
@@ -17,7 +16,7 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
     base_rent: unit.base_rent,
     wifi_rate: unit.wifi_rate,
     map_location_url: unit.map_location_url || '',
-    interior_photos: unit.interior_photos || [],
+    interior_photos: unit.interior_photos ?? [],
   });
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,7 +64,7 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
       <button 
         onClick={() => setOpen(true)}
         className="btn btn-ghost" 
-        style={{ padding: '0.4rem', minWidth: 'auto' }}
+        style={{ padding: '0.4rem', minWidth: 'auto', borderRadius: '0.5rem' }}
         title="Edit Unit Details"
       >
         <Settings size={18} />
@@ -73,17 +72,30 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
 
       {open && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
-          backdropFilter: 'blur(4px)'
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          backdropFilter: 'blur(8px)', padding: '1.5rem'
         }}>
-          <div className="card" style={{ width: '100%', maxWidth: '500px', margin: '1rem', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1, paddingBottom: '0.5rem' }}>
-              <h2 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Edit Unit: {unit.unit_name}</h2>
-              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+          <div className="card" style={{ 
+            width: '100%', maxWidth: '500px', maxHeight: '100%', overflowY: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1)',
+            position: 'relative', border: '1px solid var(--border)'
+          }}>
+            <div style={{ 
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: '1.5rem', position: 'sticky', top: 0, background: 'var(--bg-card)', 
+              zIndex: 10, padding: '0.5rem 0'
+            }}>
+              <h2 style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>Edit Unit Details</h2>
+              <button 
+                onClick={() => setOpen(false)} 
+                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', display: 'flex' }}
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="input-group">
                   <label className="label">Unit Name</label>
@@ -95,51 +107,59 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
                 </div>
               </div>
 
-              <div className="input-group">
-                <label className="label">WiFi Rate (₱)</label>
-                <input className="input" type="number" value={formData.wifi_rate} onChange={e => setFormData({...formData, wifi_rate: parseFloat(e.target.value)})} />
-              </div>
-
-              <div className="input-group">
-                <label className="label">Map Location URL (Google Maps)</label>
-                <input 
-                  className="input" 
-                  placeholder="https://maps.google.com/..."
-                  value={formData.map_location_url} 
-                  onChange={e => setFormData({...formData, map_location_url: e.target.value})} 
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="input-group">
+                  <label className="label">WiFi Rate (₱)</label>
+                  <input className="input" type="number" value={formData.wifi_rate} onChange={e => setFormData({...formData, wifi_rate: parseFloat(e.target.value)})} />
+                </div>
+                <div className="input-group">
+                  <label className="label">Map Location URL</label>
+                  <input 
+                    className="input" 
+                    placeholder="Google Maps link..."
+                    value={formData.map_location_url} 
+                    onChange={e => setFormData({...formData, map_location_url: e.target.value})} 
+                  />
+                </div>
               </div>
 
               {/* Photo Section */}
-              <div>
-                <label className="label">Interior Photos</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                <label className="label" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ImageIcon size={18} /> Interior Photos
+                </label>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem' }}>
                   {formData.interior_photos.map((url, i) => (
-                    <div key={i} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <div key={i} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '0.75rem', overflow: 'hidden', border: '2px solid var(--border)' }}>
                       <Image src={url} alt={`Unit photo ${i+1}`} fill style={{ objectFit: 'cover' }} />
                       <button 
                         type="button"
                         onClick={() => removePhoto(i)}
-                        style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(239,68,68,0.8)', color: '#fff', border: 'none', borderRadius: '4px', padding: '2px', cursor: 'pointer' }}
+                        style={{ position: 'absolute', top: '4px', right: '4px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   ))}
+                  
                   <label style={{ 
-                    width: '80px', height: '80px', border: '2px dashed var(--border)', borderRadius: '0.5rem',
+                    aspectRatio: '1/1', border: '2px dashed var(--border)', borderRadius: '0.75rem',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.7rem'
+                    cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.85rem', transition: 'all 0.2s',
+                    background: 'rgba(255,255,255,0.02)'
                   }}>
-                    {uploading ? <Loader2 className="animate-spin" size={16} /> : <><Upload size={16} /> Add</>}
+                    {uploading ? <Loader2 className="animate-spin" size={24} /> : <><Upload size={24} style={{ marginBottom: '0.25rem' }} /> Add Photo</>}
                     <input type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} disabled={uploading} />
                   </label>
                 </div>
               </div>
 
-              <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.8rem' }}>
-                {loading ? 'Saving...' : <><Save size={18} /> Update Unit Details</>}
-              </button>
+              <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', padding: '1rem 0', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+                <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
+                  {loading ? 'Saving Changes...' : <><Save size={20} /> Save All Changes</>}
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -147,4 +167,3 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
     </>
   );
 }
-
