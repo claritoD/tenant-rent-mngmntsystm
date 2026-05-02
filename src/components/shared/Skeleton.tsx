@@ -17,7 +17,7 @@ export function Skeleton({ className, width, height, borderRadius = '0.5rem', st
         height: height ?? '1rem',
         borderRadius: borderRadius,
         ...style,
-        background: 'linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-card) 50%, var(--bg-surface) 75%)',
+        background: 'linear-gradient(90deg, var(--bg-surface) 25%, var(--border) 50%, var(--bg-surface) 75%)',
         backgroundSize: '200% 100%',
         animation: 'skeleton-pulse 1.5s ease-in-out infinite',
       }}

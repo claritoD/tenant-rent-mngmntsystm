@@ -58,7 +58,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
-              <Link key={href} href={href} id={`tenant-nav-${label.toLowerCase()}`}
+              <Link key={href} href={href}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.4rem',
                   padding: '0.5rem 1rem', borderRadius: '0.5rem',

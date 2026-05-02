@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       water_mode,
       water_tank_rate: Number(water_tank_rate),
       security_deposit: Number(security_deposit),
-      anniversary_day: new Date(move_in_date).getDate(),
+      anniversary_day: parseInt(move_in_date.split('-')[2]),
       // For existing tenants carry over their financial state
       arrears: is_existing ? Number(arrears) : 0,
       credit_balance: is_existing ? Number(credit_balance) : 0,

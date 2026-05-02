@@ -78,7 +78,6 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
             <Link
               key={href}
               href={href}
-              id={`nav-${label.toLowerCase().replace(' ', '-')}`}
               onClick={onNav}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.625rem',
@@ -104,7 +103,6 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
       {/* Logout */}
       <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
         <button
-          id="owner-logout-btn"
           onClick={handleLogout}
           className="btn btn-ghost"
           style={{ width: '100%', justifyContent: 'flex-start', gap: '0.625rem' }}
