@@ -67,10 +67,6 @@ export default async function UnitsPage() {
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>WiFi Rate</span>
-                  <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{unit.wifi_rate > 0 ? formatPeso(unit.wifi_rate) : 'None'}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Added</span>
                   <span>{formatDate(unit.created_at)}</span>
                 </div>

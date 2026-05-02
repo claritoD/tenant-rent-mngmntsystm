@@ -21,7 +21,7 @@ export default async function TenantDashboardPage() {
 
   if (!tenant) return <p>Tenant record not found. Contact your landlord.</p>;
 
-  const unit = (tenant as { unit: { unit_name: string; base_rent: number; wifi_rate: number } | null }).unit;
+  const unit = tenant.unit;
   if (!unit) return <p>Your account is not assigned to a unit. Contact your landlord.</p>;
 
   const nextBillDate = nextAnniversaryDate(tenant.move_in_date);
@@ -108,7 +108,7 @@ export default async function TenantDashboardPage() {
           <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>WiFi</p>
             <p style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.25rem' }}>
-              {tenant.has_wifi ? <>{formatPeso(unit.wifi_rate)}<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>/mo</span></> : 'Opted Out'}
+              {tenant.has_wifi ? <>{formatPeso(tenant.wifi_rate)}<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>/mo</span></> : 'Opted Out'}
             </p>
           </div>
           <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>

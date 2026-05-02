@@ -98,6 +98,7 @@ export async function quickStartTenant(data: {
       water_mode: data.water_mode ?? 'tank',
       water_tank_rate: data.water_tank_rate ?? 0,
       security_deposit: data.security_deposit ?? 0,
+      anniversary_day: new Date(data.move_in_date).getDate(),
       start_electric_reading: data.start_electric_reading ?? 0,
       start_water_reading: data.start_water_reading ?? 0,
       is_active: true
@@ -108,6 +109,13 @@ export async function quickStartTenant(data: {
       await adminSupabase.auth.admin.deleteUser(userId);
       throw new Error(`Tenant Error: ${tErr.message}`);
     }
+
+    // Fetch Unit Details for the email
+    const { data: unitData } = await adminSupabase
+      .from('units')
+      .select('unit_name, base_rent')
+      .eq('id', data.unit_id)
+      .single();
 
     // 3. Insert Historical Payments
     if (data.payments.length > 0) {
@@ -136,8 +144,16 @@ export async function quickStartTenant(data: {
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
               <h2 style="color: #6366f1;">Hello ${data.name}!</h2>
               <p>Your landlord has created an account for you in the <strong>RentEase Tenant Portal</strong>.</p>
-              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+              
               <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e293b;">Rental Details:</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Unit:</strong> ${unitData?.unit_name || 'Assigned Unit'}</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Monthly Rent:</strong> ₱${unitData?.base_rent?.toLocaleString() || '0'}</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Move-in Date:</strong> ${new Date(data.move_in_date).toLocaleDateString()}</p>
+              </div>
+
+              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+              <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
                 <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rent-ease.vercel.app'}/login">Click here to login</a></p>
                 <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${data.password}</p>
               </div>

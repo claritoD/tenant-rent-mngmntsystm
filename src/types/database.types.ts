@@ -1,5 +1,5 @@
-// Auto-generated types matching supabase/migrations/001_initial_schema.sql
-// Re-generate with: npx supabase gen types typescript --linked > src/types/database.types.ts
+// Auto-generated types matching latest schema
+// Updated manually to reflect wifi_rate move to Tenant and starting meter columns
 
 export type WaterBillingMode = 'metered' | 'tank';
 export type UtilityType = 'electric' | 'water';
@@ -10,7 +10,6 @@ export interface Unit {
   id: string;
   unit_name: string;
   base_rent: number;
-  wifi_rate: number;
   interior_photos: string[];
   map_location_url: string | null;
   created_at: string;
@@ -23,11 +22,14 @@ export interface Tenant {
   move_in_date: string;
   anniversary_day: number;
   has_wifi: boolean;
+  wifi_rate: number;
   security_deposit: number;
   credit_balance: number;
   arrears: number;
   water_mode: WaterBillingMode;
   water_tank_rate: number;
+  start_electric_reading: number;
+  start_water_reading: number;
   is_active: boolean;
   created_at: string;
   // joined

@@ -14,7 +14,6 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
   const [formData, setFormData] = useState({
     unit_name: unit.unit_name,
     base_rent: unit.base_rent,
-    wifi_rate: unit.wifi_rate,
     map_location_url: unit.map_location_url || '',
     interior_photos: unit.interior_photos ?? [],
   });

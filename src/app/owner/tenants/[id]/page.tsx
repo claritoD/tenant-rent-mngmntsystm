@@ -22,7 +22,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
   ]);
 
   if (!tenant) notFound();
-  const unit = (tenant as { unit: { unit_name: string; base_rent: number; wifi_rate: number } | null }).unit;
+  const unit = tenant.unit;
 
   return (
     <div className="animate-enter">
@@ -44,8 +44,8 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           { label: 'Base Rent',      value: formatPeso(unit?.base_rent ?? 0) },
           { label: 'Arrears',        value: formatPeso(tenant.arrears),       highlight: tenant.arrears > 0 ? '#ef4444' : undefined },
           { label: 'Credit Balance', value: formatPeso(tenant.credit_balance), highlight: tenant.credit_balance > 0 ? '#10b981' : undefined },
-          { label: 'Water Mode',     value: tenant.water_mode === 'metered' ? 'Metered' : `Tank (${formatPeso(tenant.water_tank_rate)}/mo)` },
-          { label: 'WiFi',           value: tenant.has_wifi ? `Yes · ${formatPeso(unit?.wifi_rate ?? 0)}/mo` : 'No' },
+          { label: 'Water Mode',     value: tenant.water_mode === 'metered' ? 'Metered' : `Tank (${formatPeso(tenant.water_tank_rate)}/refill)` },
+          { label: 'WiFi',           value: tenant.has_wifi ? `Yes · ${formatPeso(tenant.wifi_rate)}/mo` : 'No' },
           { label: 'Deposit',        value: formatPeso(tenant.security_deposit) },
         ].map(({ label, value, highlight }) => (
           <div key={label} className="stat-card">

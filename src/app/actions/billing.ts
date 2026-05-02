@@ -19,6 +19,20 @@ export async function generateBill(tenantId: string) {
     if (tenantErr || !tenant) return { error: 'Tenant not found.' };
 
     const unit = (tenant as { unit: Unit }).unit;
+    const billDate = new Date();
+    const pLabel = periodLabel(billDate);
+
+    // 1.5 Check for existing bill this period
+    const { data: existingBill } = await supabase
+      .from('bills')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('period_label', pLabel)
+      .maybeSingle();
+
+    if (existingBill) {
+      return { error: `Bill for ${pLabel} already exists.` };
+    }
 
     // 2. Fetch Latest Readings (Electric + Water if metered)
     const latestDate = latestReadingDate();
@@ -46,9 +60,6 @@ export async function generateBill(tenantId: string) {
 
     // 4. Compute Bill
     const breakdown = computeBill(tenant as Tenant, unit, electricReading as MeterReading | null, waterReading as MeterReading | null, waterRefills);
-
-    const billDate = new Date();
-    const pLabel = periodLabel(billDate);
 
     // 5. Transaction: We need to use service role to bypass some RLS if needed, 
     // or just run sequentially since owner has full access.

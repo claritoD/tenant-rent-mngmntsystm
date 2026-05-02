@@ -88,6 +88,7 @@ export async function POST(request: Request) {
       water_mode,
       water_tank_rate: Number(water_tank_rate),
       security_deposit: Number(security_deposit),
+      anniversary_day: new Date(move_in_date).getDate(),
       // For existing tenants carry over their financial state
       arrears: is_existing ? Number(arrears) : 0,
       credit_balance: is_existing ? Number(credit_balance) : 0,
@@ -102,6 +103,13 @@ export async function POST(request: Request) {
       return Response.json({ error: tenantError.message }, { status: 400 });
     }
 
+    // Fetch Unit Details for the email
+    const { data: unitData } = await adminSupabase
+      .from('units')
+      .select('unit_name, base_rent')
+      .eq('id', unit_id)
+      .single();
+
     // 5. Send Welcome Email
     if (resend) {
       try {
@@ -113,8 +121,24 @@ export async function POST(request: Request) {
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
               <h2 style="color: #6366f1;">Hello ${name}!</h2>
               <p>Your landlord has created an account for you in the <strong>RentEase Tenant Portal</strong>.</p>
-              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+              
               <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e293b;">Rental Details:</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Unit:</strong> ${unitData?.unit_name || 'Assigned Unit'}</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Monthly Rent:</strong> ₱${unitData?.base_rent?.toLocaleString() || '0'}</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Move-in Date:</strong> ${new Date(move_in_date).toLocaleDateString()}</p>
+              </div>
+
+              ${is_existing && (Number(arrears) > 0 || Number(credit_balance) > 0) ? `
+              <div style="background: #fffbeb; padding: 15px; border-radius: 6px; margin: 20px 0; border: 1px solid #fde68a;">
+                <p style="margin: 0; font-size: 15px; font-weight: 600; color: #92400e;">Current Account Balance:</p>
+                ${Number(arrears) > 0 ? `<p style="margin: 5px 0; font-size: 14px; color: #ef4444;"><strong>Arrears:</strong> ₱${Number(arrears).toLocaleString()}</p>` : ''}
+                ${Number(credit_balance) > 0 ? `<p style="margin: 5px 0; font-size: 14px; color: #10b981;"><strong>Credit Balance:</strong> ₱${Number(credit_balance).toLocaleString()}</p>` : ''}
+              </div>
+              ` : ''}
+
+              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+              <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
                 <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rent-ease.vercel.app'}/login">Click here to login</a></p>
                 <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${password}</p>
               </div>
