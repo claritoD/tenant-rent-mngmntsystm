@@ -1,0 +1,118 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard,
+  Users,
+  Zap,
+  CreditCard,
+  LogOut,
+  Home,
+  ChevronRight,
+  Settings,
+  Wrench,
+  Receipt,
+} from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+
+const NAV_ITEMS = [
+  { href: '/owner',              label: 'Overview',       icon: LayoutDashboard },
+  { href: '/owner/units',        label: 'Units',          icon: Home },
+  { href: '/owner/tenants',      label: 'Tenants',        icon: Users },
+  { href: '/owner/meter-readings', label: 'Meter Readings', icon: Zap },
+  { href: '/owner/billing',      label: 'Billing',        icon: Zap },
+  { href: '/owner/payments',     label: 'Payments',       icon: CreditCard },
+  { href: '/owner/maintenance',  label: 'Maintenance',    icon: Wrench },
+  { href: '/owner/expenses',     label: 'Expenses',       icon: Receipt },
+  { href: '/owner/settings',     label: 'Settings',       icon: Settings },
+];
+
+export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: () => void }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+  }
+
+  return (
+    <aside style={{
+      width: '240px',
+      flexShrink: 0,
+      background: 'var(--bg-surface)',
+      borderRight: '1px solid var(--border)',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      position: isMobile ? 'relative' : 'sticky',
+      top: 0,
+    }}>
+      {/* Logo */}
+      <div style={{ padding: '1.5rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div style={{
+            width: '36px', height: '36px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            borderRadius: '10px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Home size={18} color="#fff" />
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>RentEase</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Owner Portal</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '1rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || (href !== '/owner' && pathname.startsWith(href));
+          return (
+            <Link
+              key={href}
+              href={href}
+              id={`nav-${label.toLowerCase().replace(' ', '-')}`}
+              onClick={onNav}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.625rem',
+                padding: '0.6rem 0.875rem',
+                borderRadius: '0.5rem',
+                textDecoration: 'none',
+                fontWeight: isActive ? 600 : 400,
+                fontSize: '0.875rem',
+                color: isActive ? '#fff' : 'var(--text-secondary)',
+                background: isActive ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'transparent',
+                boxShadow: isActive ? '0 2px 12px rgba(99,102,241,0.35)' : 'none',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <Icon size={17} />
+              {label}
+              {isActive && <ChevronRight size={14} style={{ marginLeft: 'auto' }} />}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Logout */}
+      <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
+        <button
+          id="owner-logout-btn"
+          onClick={handleLogout}
+          className="btn btn-ghost"
+          style={{ width: '100%', justifyContent: 'flex-start', gap: '0.625rem' }}
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
+      </div>
+    </aside>
+  );
+}
+
