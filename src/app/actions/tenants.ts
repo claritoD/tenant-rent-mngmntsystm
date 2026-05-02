@@ -98,7 +98,6 @@ export async function quickStartTenant(data: {
       water_mode: data.water_mode ?? 'tank',
       water_tank_rate: data.water_tank_rate ?? 0,
       security_deposit: data.security_deposit ?? 0,
-      anniversary_day: parseInt(data.move_in_date.split('-')[2]),
       start_electric_reading: data.start_electric_reading ?? 0,
       start_water_reading: data.start_water_reading ?? 0,
       is_active: true
