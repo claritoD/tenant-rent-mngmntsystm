@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from './ThemeToggle';
 
 const NAV_ITEMS = [
   { href: '/owner',              label: 'Overview',       icon: LayoutDashboard },
@@ -111,6 +112,9 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
           <LogOut size={16} />
           Sign Out
         </button>
+        <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+          <ThemeToggle />
+        </div>
       </div>
     </aside>
   );

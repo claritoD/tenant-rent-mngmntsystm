@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CreditCard, FileText, LogOut, Home, Wrench, Menu, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from './ThemeToggle';
 
 const NAV_ITEMS = [
   { href: '/tenant',        label: 'Dashboard', icon: LayoutDashboard },
@@ -75,6 +76,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
 
         {/* User & logout (Desktop) */}
         <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: '1rem' }}>
+          <ThemeToggle />
           <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>👋 {tenantName}</span>
           <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '0.4rem 1rem' }}>
             <LogOut size={15} /> Sign Out
@@ -125,6 +127,9 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
             );
           })}
           <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <ThemeToggle />
+            </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>Signed in as {tenantName}</p>
             <button onClick={handleLogout} className="btn btn-danger" style={{ width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
               <LogOut size={18} /> Sign Out
