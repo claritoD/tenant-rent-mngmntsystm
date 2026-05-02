@@ -154,7 +154,7 @@ export async function quickStartTenant(data: {
 
               <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
               <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rent-ease.vercel.app'}/login">Click here to login</a></p>
+                <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tenant-rent-mngmntsystm.vercel.app'}/login">Click here to login</a></p>
                 <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${data.password}</p>
               </div>
               <p style="font-size: 12px; color: #64748b;">Please change your password once you log in.</p>

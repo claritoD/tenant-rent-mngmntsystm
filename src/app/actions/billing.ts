@@ -116,6 +116,7 @@ export async function generateBill(tenantId: string) {
             <p>Your hybrid utility bill for <strong>${pLabel}</strong> has been generated.</p>
             <h3>Total Due: ₱${breakdown.totalDue.toFixed(2)}</h3>
             <p>Please log in to your tenant dashboard to view the full breakdown and submit your GCash payment reference.</p>
+            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tenant-rent-mngmntsystm.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">View My Dashboard</a></p>
             <br/>
             <p>Thank you,<br/>Your Landlord</p>
           `

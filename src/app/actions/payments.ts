@@ -68,6 +68,7 @@ export async function verifyPayment(paymentId: string) {
             <h2>Hello ${tenant.name},</h2>
             <p>Your GCash payment of <strong>₱${amount.toFixed(2)}</strong> has been verified and applied to your account.</p>
             <p>Your new outstanding arrears balance is <strong>₱${newArrears.toFixed(2)}</strong>.</p>
+            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tenant-rent-mngmntsystm.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Go to Dashboard</a></p>
             <p>Thank you!</p>
           `
         });
