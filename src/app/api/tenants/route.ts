@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { resend, FROM_EMAIL } from '@/lib/resend';
+
 
 /**
  * POST /api/tenants
@@ -92,6 +94,31 @@ export async function POST(request: Request) {
       // Roll back: delete the auth user we just created
       await adminSupabase.auth.admin.deleteUser(userId);
       return Response.json({ error: tenantError.message }, { status: 400 });
+    }
+
+    // 5. Send Welcome Email
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: email,
+          subject: 'Welcome to your Tenant Portal!',
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h2 style="color: #6366f1;">Hello ${name}!</h2>
+              <p>Your landlord has created an account for you in the <strong>RentEase Tenant Portal</strong>.</p>
+              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+              <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rent-ease.vercel.app'}/login">Click here to login</a></p>
+                <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${password}</p>
+              </div>
+              <p style="font-size: 12px; color: #64748b;">Please change your password once you log in.</p>
+            </div>
+          `
+        });
+      } catch (e) {
+        console.error('Email failed to send, but tenant was created:', e);
+      }
     }
 
     return Response.json({ success: true, tenantId: userId }, { status: 201 });

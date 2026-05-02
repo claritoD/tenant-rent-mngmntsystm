@@ -3,6 +3,7 @@ import { formatPeso, formatDate } from '@/utils/format';
 import Image from 'next/image';
 import { AddUnitToggle } from '@/components/owner/AddUnitToggle';
 import { MapPin, Image as ImageIcon, Home } from 'lucide-react';
+import { EditUnitToggle } from '@/components/owner/EditUnitToggle';
 import { DeleteUnitButton } from '@/components/owner/DeleteUnitButton';
 import type { Metadata } from 'next';
 
@@ -86,8 +87,10 @@ export default async function UnitsPage() {
                   </span>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <EditUnitToggle unit={unit} />
                   <DeleteUnitButton unitId={unit.id} name={unit.unit_name} />
                 </div>
+
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { formatPeso, formatDate, formatDateTime } from '@/utils/format';
 import { notFound } from 'next/navigation';
 import { VaultUpload } from '@/components/owner/VaultUpload';
 import { ArchiveTenantButton } from '@/components/owner/ArchiveTenantButton';
+import { EditTenantToggle } from '@/components/owner/EditTenantToggle';
 import { MoveOutSettlement } from '@/components/owner/MoveOutSettlement';
 import type { Metadata } from 'next';
 
@@ -12,11 +13,12 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: tenant }, { data: bills }, { data: payments }, { data: vaultDocs }] = await Promise.all([
+  const [{ data: tenant }, { data: bills }, { data: payments }, { data: vaultDocs }, { data: allUnits }] = await Promise.all([
     supabase.from('tenants').select('*, unit:units(*)').eq('id', id).single(),
     supabase.from('bills').select('*').eq('tenant_id', id).order('bill_date', { ascending: false }).limit(12),
     supabase.from('payments').select('*').eq('tenant_id', id).order('date_submitted', { ascending: false }).limit(20),
     supabase.storage.from('vault').list(id),
+    supabase.from('units').select('*').order('unit_name'),
   ]);
 
   if (!tenant) notFound();
@@ -29,7 +31,11 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           <h1>{tenant.name}</h1>
           <p>Unit: {unit?.unit_name ?? 'Unassigned'} · Move-in: {formatDate(tenant.move_in_date)} · {tenant.is_active ? 'Active' : 'Archived'}</p>
         </div>
-        {tenant.is_active && <ArchiveTenantButton tenantId={id} name={tenant.name} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {tenant.is_active && <EditTenantToggle tenant={tenant} units={allUnits ?? []} />}
+          {tenant.is_active && <ArchiveTenantButton tenantId={id} name={tenant.name} />}
+        </div>
+
       </div>
 
       {/* Profile cards */}

@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { resend, FROM_EMAIL } from '@/lib/resend';
+import type { Tenant } from '@/types/database.types';
+
 
 export async function archiveTenant(tenantId: string) {
   try {
@@ -15,6 +18,24 @@ export async function archiveTenant(tenantId: string) {
         is_active: false,
         unit_id: null 
       })
+      .eq('id', tenantId);
+
+    if (error) throw error;
+
+    revalidatePath('/owner/tenants');
+    revalidatePath(`/owner/tenants/${tenantId}`);
+    return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}
+
+export async function updateTenant(tenantId: string, data: Partial<Tenant>) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('tenants')
+      .update(data)
       .eq('id', tenantId);
 
     if (error) throw error;
@@ -88,6 +109,31 @@ export async function quickStartTenant(data: {
 
       const { error: pErr } = await supabase.from('payments').insert(paymentRecords);
       if (pErr) throw new Error(`Payment Import Error: ${pErr.message}`);
+    }
+
+    // 4. Send Welcome Email
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: data.email,
+          subject: 'Welcome to your Tenant Portal!',
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h2 style="color: #6366f1;">Hello ${data.name}!</h2>
+              <p>Your landlord has created an account for you in the <strong>RentEase Tenant Portal</strong>.</p>
+              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+              <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rent-ease.vercel.app'}/login">Click here to login</a></p>
+                <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${data.password}</p>
+              </div>
+              <p style="font-size: 12px; color: #64748b;">Please change your password once you log in.</p>
+            </div>
+          `
+        });
+      } catch (e) {
+        console.error('Email failed to send, but tenant was created:', e);
+      }
     }
 
     revalidatePath('/owner/tenants');
