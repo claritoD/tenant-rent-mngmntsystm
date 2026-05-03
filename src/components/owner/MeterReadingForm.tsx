@@ -65,7 +65,7 @@ export default function MeterReadingForm({ tenants }: Props) {
     }
 
     fetchLastReading();
-  }, [tenantId, type, tenants]); 
+  }, [tenantId, type, tenants, ratePerUnit]); 
 
 
 

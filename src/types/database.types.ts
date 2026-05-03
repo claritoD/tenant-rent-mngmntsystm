@@ -93,3 +93,46 @@ export interface WaterRefill {
   // joined
   tenant?: Tenant;
 }
+
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+export type Database = {
+  public: {
+    Tables: {
+      units: {
+        Row: Unit;
+        Insert: Unit;
+        Update: Partial<Unit>;
+      };
+      tenants: {
+        Row: Tenant;
+        Insert: Tenant;
+        Update: Partial<Tenant>;
+      };
+      meter_readings: {
+        Row: MeterReading;
+        Insert: MeterReading;
+        Update: Partial<MeterReading>;
+      };
+      bills: {
+        Row: Bill;
+        Insert: Bill;
+        Update: Partial<Bill>;
+      };
+      payments: {
+        Row: Payment;
+        Insert: Payment;
+        Update: Partial<Payment>;
+      };
+      water_refills: {
+        Row: WaterRefill;
+        Insert: WaterRefill;
+        Update: Partial<WaterRefill>;
+      };
+    };
+    Views: { [key: string]: { Row: never; Insert: never; Update: never } };
+    Functions: { [key: string]: { Args: never[]; Returns: unknown } };
+    Enums: { [key: string]: string };
+    CompositeTypes: { [key: string]: unknown };
+  };
+};

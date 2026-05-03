@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UserPlus, Banknote, CheckCircle2, ArrowRight, ArrowLeft, Loader2, Droplet, Wifi } from 'lucide-react';
+import { UserPlus, Banknote, CheckCircle2, ArrowRight, ArrowLeft, Loader2, Droplet } from 'lucide-react';
 import { quickStartTenant, type HistoricalPayment } from '@/app/actions/tenants';
 import type { Unit } from '@/types/database.types';
 

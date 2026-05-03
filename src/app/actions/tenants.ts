@@ -161,8 +161,12 @@ export async function quickStartTenant(data: {
           `
         });
       } catch (e) {
-        console.error('Email failed to send, but tenant was created:', e);
+        const emailError = e instanceof Error ? e.message : String(e);
+        console.error('⚠️ Email failed to send for tenant:', data.email, 'Error:', emailError);
+        console.error('Check that RESEND_API_KEY and RESEND_FROM_EMAIL are configured correctly in .env.local');
       }
+    } else {
+      console.warn('⚠️ Resend not configured (RESEND_API_KEY missing). Email not sent for tenant:', data.email);
     }
 
     revalidatePath('/owner/tenants');
