@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus, X, Trash2 } from 'lucide-react';
+import { quickStartTenant, type HistoricalPayment } from '@/app/actions/tenants';
 import type { Unit } from '@/types/database.types';
 
 interface Props {
@@ -33,6 +34,7 @@ export function AddTenantForm({ units, onClose }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('new');
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [payments, setPayments] = useState<HistoricalPayment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -40,6 +42,20 @@ export function AddTenantForm({ units, onClose }: Props) {
   function set(key: keyof typeof DEFAULT_FORM, value: string | boolean) {
     setForm(prev => ({ ...prev, [key]: value }));
   }
+
+  const addPaymentRow = () => {
+    setPayments([...payments, { amount: 0, date: new Date().toISOString().split('T')[0] }]);
+  };
+
+  const removePaymentRow = (index: number) => {
+    setPayments(payments.filter((_, i) => i !== index));
+  };
+
+  const handlePaymentChange = (index: number, field: keyof HistoricalPayment, value: string | number) => {
+    const newPayments = [...payments];
+    newPayments[index] = { ...newPayments[index], [field]: field === 'date' ? String(value) : Number(value) };
+    setPayments(newPayments);
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,36 +69,69 @@ export function AddTenantForm({ units, onClose }: Props) {
       return;
     }
 
-    const res = await fetch('/api/tenants', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name.trim(),
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        unit_id: form.unit_id,
-        move_in_date: form.move_in_date,
-        has_wifi: form.has_wifi,
-        wifi_rate: parseFloat(form.wifi_rate || '0'),
-        water_mode: form.water_mode,
-        water_tank_rate: parseFloat(form.water_tank_rate || '0'),
-        security_deposit: parseFloat(form.security_deposit || '0'),
-        is_existing: mode === 'existing',
-        arrears: parseFloat(form.arrears || '0'),
-        credit_balance: parseFloat(form.credit_balance || '0'),
-        start_electric_reading: parseFloat(form.start_electric_reading || '0'),
-        start_water_reading: parseFloat(form.start_water_reading || '0'),
-      }),
-    });
+    try {
+      if (mode === 'existing' && payments.length > 0) {
+        // Use quickStartTenant for existing tenants with payment history
+        const validPayments = payments.filter(p => p.amount > 0);
+        const result = await quickStartTenant({
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+          unit_id: form.unit_id,
+          move_in_date: form.move_in_date,
+          has_wifi: form.has_wifi,
+          wifi_rate: parseFloat(form.wifi_rate || '0'),
+          water_mode: form.water_mode,
+          water_tank_rate: parseFloat(form.water_tank_rate || '0'),
+          security_deposit: parseFloat(form.security_deposit || '0'),
+          start_electric_reading: parseFloat(form.start_electric_reading || '0'),
+          start_water_reading: parseFloat(form.start_water_reading || '0'),
+          payments: validPayments,
+        });
+        if (result.error) {
+          setError(result.error);
+        } else {
+          setSuccess(`✅ ${form.name} added successfully with payment history!`);
+          setForm(DEFAULT_FORM);
+          setPayments([]);
+          router.refresh();
+        }
+      } else {
+        // Use API for new tenants or existing without payment history
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name.trim(),
+            email: form.email.trim().toLowerCase(),
+            password: form.password,
+            unit_id: form.unit_id,
+            move_in_date: form.move_in_date,
+            has_wifi: form.has_wifi,
+            wifi_rate: parseFloat(form.wifi_rate || '0'),
+            water_mode: form.water_mode,
+            water_tank_rate: parseFloat(form.water_tank_rate || '0'),
+            security_deposit: parseFloat(form.security_deposit || '0'),
+            is_existing: mode === 'existing',
+            arrears: parseFloat(form.arrears || '0'),
+            credit_balance: parseFloat(form.credit_balance || '0'),
+            start_electric_reading: parseFloat(form.start_electric_reading || '0'),
+            start_water_reading: parseFloat(form.start_water_reading || '0'),
+          }),
+        });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.error ?? 'Something went wrong.');
-    } else {
-      setSuccess(`✅ ${form.name} added successfully! They can now log in with their email and password.`);
-      setForm(DEFAULT_FORM);
-      router.refresh();
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? 'Something went wrong.');
+        } else {
+          setSuccess(`✅ ${form.name} added successfully!`);
+          setForm(DEFAULT_FORM);
+          setPayments([]);
+          router.refresh();
+        }
+      }
+    } catch (err) {
+      setError((err as Error).message || 'An error occurred');
     }
     setLoading(false);
   }
@@ -287,6 +336,50 @@ export function AddTenantForm({ units, onClose }: Props) {
             Enter the meter readings exactly as they appear when the tenant moves in. This prevents billing them for previous usage.
           </p>
         </div>
+
+        {/* ── Section: Payment History (Existing Tenants) ── */}
+        {mode === 'existing' && (
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+              📝 Payment History <span style={{ fontWeight: 400, textTransform: 'none', color: 'var(--text-muted)' }}>(optional)</span>
+            </p>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+              Add any verified payments made before the system was set up. Leave empty if no prior payments exist.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {payments.map((p, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: '0.75rem', alignItems: 'flex-end', background: 'var(--bg-surface)', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}>
+                  <div>
+                    <label style={labelStyle}>Amount (₱)</label>
+                    <input type="number" step="0.01" min="0" style={inputStyle}
+                      value={p.amount || ''} onChange={e => handlePaymentChange(i, 'amount', parseFloat(e.target.value))}
+                      placeholder="e.g. 5000" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Date Paid</label>
+                    <input type="date" style={inputStyle}
+                      value={p.date} onChange={e => handlePaymentChange(i, 'date', e.target.value)} />
+                  </div>
+                  <button type="button" onClick={() => removePaymentRow(i)}
+                    style={{
+                      padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid #fca5a5',
+                      background: 'rgba(239,68,68,0.08)', color: '#ef4444', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem',
+                    }}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={addPaymentRow}
+                style={{
+                  padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px dashed var(--border)',
+                  background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 500, fontSize: '0.85rem',
+                  marginTop: '0.25rem',
+                }}>
+                + Add Payment
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Section: Existing Tenant Financial State ── */}
         {mode === 'existing' && (
