@@ -6,8 +6,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | RentEase',
-    default: 'RentEase – Tenant Management',
+    template: '%s | RentSeasy',
+    default: 'RentSeasy – Tenant Management',
   },
   description: 'Personal tenant management with hybrid billing for landlords.',
 };

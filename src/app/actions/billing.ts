@@ -110,7 +110,7 @@ export async function generateBill(tenantId: string) {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: email,
-          subject: `Your RentEase Bill for ${pLabel} is Ready`,
+          subject: `Your RentSeasy Bill for ${pLabel} is Ready`,
           html: `
             <h2>Hello ${tenant.name},</h2>
             <p>Your hybrid utility bill for <strong>${pLabel}</strong> has been generated.</p>

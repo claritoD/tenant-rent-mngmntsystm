@@ -50,7 +50,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
           }}>
             <Home size={16} color="#fff" />
           </div>
-          <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>RentEase</span>
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>RentSeasy</span>
         </div>
 
         {/* Desktop Nav */}

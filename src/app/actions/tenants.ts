@@ -142,7 +142,7 @@ export async function quickStartTenant(data: {
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
               <h2 style="color: #6366f1;">Hello ${data.name}!</h2>
-              <p>Your landlord has created an account for you in the <strong>RentEase Tenant Portal</strong>.</p>
+              <p>Your landlord has created an account for you in the <strong>RentSeasy Tenant Portal</strong>.</p>
               
               <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
                 <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e293b;">Rental Details:</p>

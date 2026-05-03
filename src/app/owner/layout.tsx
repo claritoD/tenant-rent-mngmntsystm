@@ -4,7 +4,7 @@ import { OwnerSidebar } from '@/components/shared/OwnerSidebar';
 import { OwnerHeader } from '@/components/shared/OwnerHeader';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: { template: '%s | RentEase Owner', default: 'Owner Dashboard' } };
+export const metadata: Metadata = { title: { template: '%s | RentSeasy Owner', default: 'Owner Dashboard' } };
 
 export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
