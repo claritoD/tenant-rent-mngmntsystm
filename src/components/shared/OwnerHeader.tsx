@@ -28,7 +28,7 @@ export function OwnerHeader() {
             }}>
               <Home size={16} color="#fff" />
             </div>
-            <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>RentSeasy</p>
+            <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>RentsEasy</p>
           </div>
           
           <button 

@@ -64,7 +64,7 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
             <Home size={18} color="#fff" />
           </div>
           <div>
-            <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>RentSeasy</p>
+            <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>RentsEasy</p>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Owner Portal</p>
           </div>
         </div>

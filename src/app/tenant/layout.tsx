@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TenantNav } from '@/components/shared/TenantNav';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: { template: '%s | RentSeasy', default: 'Tenant Dashboard' } };
+export const metadata: Metadata = { title: { template: '%s | RentsEasy', default: 'Tenant Dashboard' } };
 
 export default async function TenantLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();

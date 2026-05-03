@@ -101,7 +101,7 @@ export default function LoginPage() {
           }}>
             <Home size={28} color="#fff" />
           </div>
-          <h1 className="gradient-text" style={{ fontSize: '1.75rem', fontWeight: 800 }}>RentSeasy</h1>
+          <h1 className="gradient-text" style={{ fontSize: '1.75rem', fontWeight: 800 }}>RentsEasy</h1>
           <p style={{ color: '#64748b', marginTop: '0.25rem', fontSize: '0.875rem' }}>
             Tenant Management Portal
           </p>
