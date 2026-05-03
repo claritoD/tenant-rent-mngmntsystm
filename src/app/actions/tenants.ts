@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
-import { resend, FROM_EMAIL } from '@/lib/resend';
+import { sendEmail } from '@/lib/nodemailer';
 import type { Tenant } from '@/types/database.types';
 
 
@@ -133,40 +133,34 @@ export async function quickStartTenant(data: {
     }
 
     // 4. Send Welcome Email
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: FROM_EMAIL,
-          to: data.email,
-          subject: 'Welcome to your Tenant Portal!',
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <h2 style="color: #6366f1;">Hello ${data.name}!</h2>
-              <p>Your landlord has created an account for you in the <strong>RentsEasy Tenant Portal</strong>.</p>
-              
-              <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e293b;">Rental Details:</p>
-                <p style="margin: 5px 0; font-size: 14px;"><strong>Unit:</strong> ${unitData?.unit_name || 'Assigned Unit'}</p>
-                <p style="margin: 5px 0; font-size: 14px;"><strong>Monthly Rent:</strong> ₱${unitData?.base_rent?.toLocaleString() || '0'}</p>
-                <p style="margin: 5px 0; font-size: 14px;"><strong>Move-in Date:</strong> ${new Date(data.move_in_date).toLocaleDateString()}</p>
-              </div>
-
-              <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
-              <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tenant-rent-mngmntsystm.vercel.app'}/login">Click here to login</a></p>
-                <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${data.password}</p>
-              </div>
-              <p style="font-size: 12px; color: #64748b;">Please change your password once you log in.</p>
+    try {
+      await sendEmail({
+        to: data.email,
+        subject: 'Welcome to your Tenant Portal!',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h2 style="color: #6366f1;">Hello ${data.name}!</h2>
+            <p>Your landlord has created an account for you in the <strong>RentsEasy Tenant Portal</strong>.</p>
+            
+            <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e293b;">Rental Details:</p>
+              <p style="margin: 5px 0; font-size: 14px;"><strong>Unit:</strong> ${unitData?.unit_name || 'Assigned Unit'}</p>
+              <p style="margin: 5px 0; font-size: 14px;"><strong>Monthly Rent:</strong> ₱${unitData?.base_rent?.toLocaleString() || '0'}</p>
+              <p style="margin: 5px 0; font-size: 14px;"><strong>Move-in Date:</strong> ${new Date(data.move_in_date).toLocaleDateString()}</p>
             </div>
-          `
-        });
-      } catch (e) {
-        const emailError = e instanceof Error ? e.message : String(e);
-        console.error('⚠️ Email failed to send for tenant:', data.email, 'Error:', emailError);
-        console.error('Check that RESEND_API_KEY and RESEND_FROM_EMAIL are configured correctly in .env.local');
-      }
-    } else {
-      console.warn('⚠️ Resend not configured (RESEND_API_KEY missing). Email not sent for tenant:', data.email);
+
+            <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
+            <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login">Click here to login</a></p>
+              <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${data.password}</p>
+            </div>
+            <p style="font-size: 12px; color: #64748b;">Please change your password once you log in.</p>
+          </div>
+        `
+      });
+    } catch (e) {
+      const emailError = e instanceof Error ? e.message : String(e);
+      console.error('⚠️ Email failed to send for tenant:', data.email, 'Error:', emailError);
     }
 
     revalidatePath('/owner/tenants');

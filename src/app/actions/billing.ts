@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { computeBill, latestReadingDate, periodLabel } from '@/utils/billing';
 import type { Tenant, Unit, MeterReading, WaterRefill } from '@/types/database.types';
-import { resend, FROM_EMAIL } from '@/lib/resend';
+import { sendEmail } from '@/lib/nodemailer';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 
 export async function generateBill(tenantId: string) {
@@ -97,18 +97,17 @@ export async function generateBill(tenantId: string) {
     }
 
     // 6. Send Email Notification
-    if (resend) {
-      const adminSupabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { autoRefreshToken: false, persistSession: false } }
-      );
-      const { data: authData } = await adminSupabase.auth.admin.getUserById(tenantId);
-      const email = authData?.user?.email;
+    const adminSupabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: authData } = await adminSupabase.auth.admin.getUserById(tenantId);
+    const email = authData?.user?.email;
 
-      if (email) {
-        await resend.emails.send({
-          from: FROM_EMAIL,
+    if (email) {
+      try {
+        await sendEmail({
           to: email,
           subject: `Your RentsEasy Bill for ${pLabel} is Ready`,
           html: `
@@ -116,11 +115,13 @@ export async function generateBill(tenantId: string) {
             <p>Your hybrid utility bill for <strong>${pLabel}</strong> has been generated.</p>
             <h3>Total Due: ₱${breakdown.totalDue.toFixed(2)}</h3>
             <p>Please log in to your tenant dashboard to view the full breakdown and submit your GCash payment reference.</p>
-            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://tenant-rent-mngmntsystm.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">View My Dashboard</a></p>
+            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">View My Dashboard</a></p>
             <br/>
             <p>Thank you,<br/>Your Landlord</p>
           `
         });
+      } catch (e) {
+        console.error('Email notification failed:', e);
       }
     }
 
