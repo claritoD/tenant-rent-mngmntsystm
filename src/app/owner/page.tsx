@@ -2,12 +2,22 @@ import { createClient } from '@/lib/supabase/server';
 import { formatPeso } from '@/utils/format';
 import { Users, CheckCircle2, Droplet, TrendingUp } from 'lucide-react';
 import { DashboardCharts } from '@/components/owner/DashboardCharts';
+import { DashboardAnalytics } from '@/components/owner/DashboardAnalytics';
+import { DashboardSettingsForm } from '@/components/owner/DashboardSettingsForm';
+import { getOrCreateDashboardSettings, getDashboardAnalytics } from '@/app/actions/dashboard';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Overview' };
 
 export default async function OwnerOverviewPage() {
   const supabase = await createClient();
+  
+  // Get dashboard settings
+  const settingsResult = await getOrCreateDashboardSettings();
+  const settings = settingsResult.data;
+  
+  // Get analytics
+  const analytics = await getDashboardAnalytics();
 
   // Fetch stats in parallel
   const [
@@ -93,7 +103,28 @@ export default async function OwnerOverviewPage() {
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>You have {pendingRefills} pending water tank refill request(s).</p>
             </div>
           </div>
-          <a href="/owner/water-refills" className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+          <a href="/owner/water-refills" className="btn btn-primary" style={{ padding: '
+
+      {/* Analytics Dashboard */}
+      {analytics && settings && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+            <h2 style={{ fontWeight: 600, fontSize: '1.1rem' }}>Analytics & Metrics</h2>
+            <DashboardSettingsForm initialSettings={settings} />
+          </div>
+          
+          {settings.show_revenue_chart && settings.show_payment_stats && settings.show_tenant_occupancy && (
+            <DashboardAnalytics
+              occupancy={analytics.occupancy}
+              revenue={analytics.revenue}
+              arrears={analytics.arrears}
+              credit={analytics.credit}
+              payments={analytics.payments}
+              pending={analytics.pending}
+            />
+          )}
+        </>
+      )}0.5rem 1rem', fontSize: '0.85rem' }}>
             Review Requests
           </a>
         </div>

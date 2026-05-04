@@ -5,6 +5,7 @@ export type WaterBillingMode = 'metered' | 'tank';
 export type UtilityType = 'electric' | 'water';
 export type PaymentStatus = 'pending' | 'verified' | 'rejected';
 export type WaterRefillStatus = 'pending' | 'completed' | 'cancelled';
+export type DueDateChangeStatus = 'pending' | 'approved' | 'rejected';
 
 export interface Unit {
   id: string;
@@ -94,6 +95,37 @@ export interface WaterRefill {
   tenant?: Tenant;
 }
 
+export interface DueDateChangeRequest {
+  id: string;
+  tenant_id: string;
+  current_anniversary_day: number;
+  requested_anniversary_day: number;
+  reason: string | null;
+  status: DueDateChangeStatus;
+  owner_note: string | null;
+  requested_at: string;
+  reviewed_at: string | null;
+  created_at: string;
+  // joined
+  tenant?: Tenant;
+}
+
+export interface OwnerDashboardSettings {
+  id: string;
+  owner_id: string;
+  show_revenue_chart: boolean;
+  show_payment_stats: boolean;
+  show_tenant_occupancy: boolean;
+  show_outstanding_arrears: boolean;
+  show_utility_consumption: boolean;
+  show_maintenance_tickets: boolean;
+  show_expense_breakdown: boolean;
+  show_water_refill_pending: boolean;
+  show_due_date_pending: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
 export type Database = {
@@ -114,6 +146,11 @@ export type Database = {
         Insert: MeterReading;
         Update: Partial<MeterReading>;
       };
+      due_date_change_requests: {
+        Row: DueDateChangeRequest;
+        Insert: DueDateChangeRequest;
+        Update: Partial<DueDateChangeRequest>;
+      };
       bills: {
         Row: Bill;
         Insert: Bill;
@@ -128,6 +165,11 @@ export type Database = {
         Row: WaterRefill;
         Insert: WaterRefill;
         Update: Partial<WaterRefill>;
+      };
+      owner_dashboard_settings: {
+        Row: OwnerDashboardSettings;
+        Insert: OwnerDashboardSettings;
+        Update: Partial<OwnerDashboardSettings>;
       };
     };
     Views: { [key: string]: { Row: never; Insert: never; Update: never } };

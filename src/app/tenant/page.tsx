@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { formatPeso, formatDate, ordinal } from '@/utils/format';
 import { nextAnniversaryDate } from '@/utils/billing';
 import { WaterRefillRequest } from '@/components/tenant/WaterRefillRequest';
+import { DueDateChangeRequest } from '@/components/tenant/DueDateChangeRequest';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'My Dashboard' };
@@ -142,6 +143,21 @@ export default async function TenantDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Due Date Management Card */}
+      <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(245,158,11,0.05)', borderColor: 'rgba(245,158,11,0.2)' }}>
+        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h2 className="font-semibold text-primary" style={{ color: '#92400e', marginBottom: '0.25rem' }}>Due Date Settings</h2>
+            <p className="text-sm text-secondary">
+              Your rent is due on the <strong>{ordinal(tenant.anniversary_day)} of each month</strong>. Need to change it?
+            </p>
+          </div>
+          <div>
+            <DueDateChangeRequest currentAnniversaryDay={tenant.anniversary_day} />
+          </div>
+        </div>
+      </div>
 
       {/* Recent Payments */}
       <div className="card">

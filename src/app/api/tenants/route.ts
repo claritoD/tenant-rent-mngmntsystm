@@ -117,7 +117,7 @@ export async function POST(request: Request) {
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
             <h2 style="color: #6366f1;">Hello ${name}!</h2>
-            <p>Your landlord has created an account for you in the <strong>RentEase Tenant Portal</strong>.</p>
+            <p>Your landlord has created an account for you in the <strong>RentsEasy Tenant Portal</strong>.</p>
             
             <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
               <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1e293b;">Rental Details:</p>
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
 
             <p>You can now log in to view your bills, submit payments, and request maintenance.</p>
             <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;">
-              <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentease.vercel.app'}/login">Click here to login</a></p>
+              <p style="margin: 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login">Click here to login</a></p>
               <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${password}</p>
             </div>
             <p style="font-size: 12px; color: #64748b;">Please change your password once you log in.</p>
