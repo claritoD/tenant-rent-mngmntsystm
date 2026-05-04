@@ -103,7 +103,14 @@ export default async function OwnerOverviewPage() {
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>You have {pendingRefills} pending water tank refill request(s).</p>
             </div>
           </div>
-          <a href="/owner/water-refills" className="btn btn-primary" style={{ padding: '
+          <a href="/owner/water-refills" className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+            Review Requests
+          </a>
+        </div>
+      )}
+
+      {/* Charts */}
+      <DashboardCharts monthlyData={monthlyData} expenseCategories={expenseBreakdown} />
 
       {/* Analytics Dashboard */}
       {analytics && settings && (
@@ -124,14 +131,7 @@ export default async function OwnerOverviewPage() {
             />
           )}
         </>
-      )}0.5rem 1rem', fontSize: '0.85rem' }}>
-            Review Requests
-          </a>
-        </div>
       )}
-
-      {/* Charts */}
-      <DashboardCharts monthlyData={monthlyData} expenseCategories={expenseBreakdown} />
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
