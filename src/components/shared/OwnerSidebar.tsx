@@ -50,9 +50,12 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
       borderRight: '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
+      maxHeight: '100vh',
+      height: 'fit-content',
       position: isMobile ? 'relative' : 'sticky',
       top: 0,
+      overflowY: 'auto',
+      overflowX: 'hidden',
     }}>
       {/* Logo */}
       <div style={{ padding: '1.5rem 1.25rem', borderBottom: '1px solid var(--border)' }}>

@@ -114,7 +114,7 @@ export default async function OwnerOverviewPage() {
 
       {/* Analytics Dashboard */}
       {analytics && settings && (
-        <>
+        <div style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
             <h2 style={{ fontWeight: 600, fontSize: '1.1rem' }}>Analytics & Metrics</h2>
             <DashboardSettingsForm initialSettings={settings} />
@@ -130,7 +130,7 @@ export default async function OwnerOverviewPage() {
               pending={analytics.pending}
             />
           )}
-        </>
+        </div>
       )}
 
       {/* Stats Grid */}
