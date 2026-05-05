@@ -83,6 +83,7 @@ export async function getDashboardAnalytics() {
 
     // Get all analytics data in parallel
     const [
+      { data: unitsData },
       { data: tenantsData },
       { data: billsData },
       { data: paymentsData },
@@ -91,7 +92,8 @@ export async function getDashboardAnalytics() {
       { data: maintenanceData },
       { data: expensesData },
     ] = await Promise.all([
-      supabase.from('tenants').select('id, is_active, arrears, credit_balance'),
+      supabase.from('units').select('id'),
+      supabase.from('tenants').select('id, is_active, unit_id, arrears, credit_balance'),
       supabase.from('bills').select('id, total_due, is_paid, rent_amount, electric_amount, water_amount, created_at'),
       supabase.from('payments').select('amount, status, verified_at, date_submitted'),
       supabase.from('water_refills').select('status, requested_at'),
@@ -100,16 +102,20 @@ export async function getDashboardAnalytics() {
       supabase.from('expenses').select('id, amount, created_at') as any, // May not exist yet
     ]);
 
+    const units = unitsData || [];
     const tenants = tenantsData || [];
     const bills = billsData || [];
     const payments = paymentsData || [];
     const waterRefills = waterRefillsData || [];
     const dueDateRequests = dueDateRequestsData || [];
 
-    // Calculate metrics
-    const totalTenants = tenants.length;
-    const activeTenants = tenants.filter(t => t.is_active).length;
-    const occupancyRate = totalTenants > 0 ? (activeTenants / totalTenants) * 100 : 0;
+    // Calculate unit occupancy
+    const totalUnits = units.length;
+    const activeUnits = units.filter(u => {
+      const tenantInUnit = tenants.find(t => t.unit_id === u.id && t.is_active);
+      return !!tenantInUnit;
+    }).length;
+    const occupancyRate = totalUnits > 0 ? (activeUnits / totalUnits) * 100 : 0;
 
     const totalArrears = tenants.reduce((sum, t) => sum + (t.arrears || 0), 0);
     const totalCredit = tenants.reduce((sum, t) => sum + (t.credit_balance || 0), 0);
@@ -136,8 +142,8 @@ export async function getDashboardAnalytics() {
 
     return {
       occupancy: {
-        total: totalTenants,
-        active: activeTenants,
+        total: totalUnits,
+        active: activeUnits,
         rate: Math.round(occupancyRate),
       },
       revenue: {

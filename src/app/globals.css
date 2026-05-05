@@ -330,7 +330,7 @@ tbody td {
   }
   
   .hide-mobile {
-    display: block !important;
+    display: flex !important;
   }
 }
 
@@ -353,6 +353,16 @@ tbody td {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+}
+
+.owner-layout > .hide-mobile {
+  display: flex !important;
+  flex-direction: column;
+  flex-wrap: nowrap !important;
+  flex-shrink: 0;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
 }
 
 .owner-main {

@@ -35,8 +35,8 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        minHeight: '64px',
-        gap: '1.5rem',
+        height: '64px',
+        gap: '1rem',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -52,38 +52,40 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
           }}>
             <Home size={16} color="#fff" />
           </div>
-          <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>RentsEasy</span>
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>RentsEasy</span>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.15rem', alignItems: 'center', flexWrap: 'nowrap', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+        <nav style={{ display: 'flex', gap: '0.2rem', alignItems: 'center', flexWrap: 'nowrap' }} className="hide-mobile">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
               <Link key={href} href={href}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.3rem',
-                  padding: '0.4rem 0.8rem', borderRadius: '0.5rem',
-                  textDecoration: 'none', fontSize: '0.8rem', fontWeight: isActive ? 600 : 400,
+                  padding: '0.35rem 0.6rem', borderRadius: '0.5rem',
+                  textDecoration: 'none', fontSize: '0.75rem', fontWeight: isActive ? 600 : 400,
                   color: isActive ? 'var(--brand-500)' : 'var(--text-secondary)',
                   background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
-                  flexShrink: 0,
                 }}>
-                <Icon size={16} />
-                {label}
+                <Icon size={14} />
+                <span>{label}</span>
               </Link>
             );
           })}
         </nav>
 
+        {/* Spacer */}
+        <div style={{ flex: 1 }} className="hide-mobile"></div>
+
         {/* User & logout (Desktop) */}
-        <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto', flexShrink: 0, flexWrap: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }} className="hide-mobile">
           <ThemeToggle />
-          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>👋 {tenantName}</span>
-          <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '0.4rem 1rem', flexShrink: 0 }}>
-            <LogOut size={15} /> Sign Out
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>👋 {tenantName}</span>
+          <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+            <LogOut size={14} /> Sign Out
           </button>
         </div>
 
