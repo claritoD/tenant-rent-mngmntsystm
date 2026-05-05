@@ -92,7 +92,7 @@ export function DashboardAnalytics({
       {/* Key Metrics Overview */}
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <h2 className="font-semibold text-sm" style={{ marginBottom: '1rem' }}>Key Metrics</h2>
-        <div className="grid-cols-auto" style={{ '--min-w': '180px' } as React.CSSProperties}>
+        <div className="grid-cols-auto" style={{ '--min-w': '200px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' } as React.CSSProperties}>
           <AnalyticCard
             title="Tenant Occupancy"
             value={`${occupancy.active}/${occupancy.total}`}

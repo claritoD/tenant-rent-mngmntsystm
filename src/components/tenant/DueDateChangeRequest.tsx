@@ -73,7 +73,7 @@ export function DueDateChangeRequest({ currentAnniversaryDay }: Props) {
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 50,
+          zIndex: 9999,
         }} onClick={() => setIsOpen(false)}>
           <div
             onClick={e => e.stopPropagation()}

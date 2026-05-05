@@ -51,7 +51,7 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
       display: 'flex',
       flexDirection: 'column',
       maxHeight: '100vh',
-      height: 'fit-content',
+      height: '100vh',
       position: isMobile ? 'relative' : 'sticky',
       top: 0,
       overflowY: 'auto',

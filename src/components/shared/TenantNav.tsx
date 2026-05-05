@@ -34,11 +34,13 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         padding: '0 1.5rem',
         display: 'flex',
         alignItems: 'center',
-        height: '64px',
+        justifyContent: 'space-between',
+        minHeight: '64px',
         gap: '1rem',
         position: 'sticky',
         top: 0,
         zIndex: 100,
+        flexWrap: 'wrap',
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: 'auto' }}>
@@ -54,7 +56,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem' }}>
+        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'nowrap' }}>
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
@@ -75,7 +77,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         </nav>
 
         {/* User & logout (Desktop) */}
-        <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: '1rem' }}>
+        <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto', flexShrink: 0 }}>
           <ThemeToggle />
           <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>👋 {tenantName}</span>
           <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '0.4rem 1rem' }}>
