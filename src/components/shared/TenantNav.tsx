@@ -56,19 +56,20 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'nowrap', flex: 1 }}>
+        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.15rem', alignItems: 'center', flexWrap: 'nowrap', flex: 1, minWidth: 0, overflow: 'hidden' }}>
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
               <Link key={href} href={href}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '0.4rem',
-                  padding: '0.5rem 1rem', borderRadius: '0.5rem',
-                  textDecoration: 'none', fontSize: '0.875rem', fontWeight: isActive ? 600 : 400,
+                  display: 'flex', alignItems: 'center', gap: '0.3rem',
+                  padding: '0.4rem 0.8rem', borderRadius: '0.5rem',
+                  textDecoration: 'none', fontSize: '0.8rem', fontWeight: isActive ? 600 : 400,
                   color: isActive ? 'var(--brand-500)' : 'var(--text-secondary)',
                   background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}>
                 <Icon size={16} />
                 {label}
