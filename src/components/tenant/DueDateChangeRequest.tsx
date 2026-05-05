@@ -78,9 +78,10 @@ export function DueDateChangeRequest({ currentAnniversaryDay }: Props) {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: 'var(--bg-secondary)', borderRadius: '1rem',
+              background: 'var(--bg-card)', borderRadius: '1rem',
               padding: '2rem', maxWidth: '500px', width: '90%',
-              boxShadow: '0 20px 25px rgba(0,0,0,0.1)',
+              boxShadow: '0 20px 25px rgba(0,0,0,0.15)',
+              position: 'relative',
             }}
           >
             <h2 style={{ marginBottom: '1rem', fontWeight: 700 }}>Request Due Date Change</h2>
@@ -98,8 +99,8 @@ export function DueDateChangeRequest({ currentAnniversaryDay }: Props) {
                   onChange={e => setSelectedDay(e.target.value ? parseInt(e.target.value) : null)}
                   style={{
                     width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)', color: 'var(--text-primary)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-surface)', color: 'var(--text-primary)',
                     fontSize: '0.875rem', fontWeight: 500,
                   }}
                 >
@@ -127,8 +128,8 @@ export function DueDateChangeRequest({ currentAnniversaryDay }: Props) {
                   placeholder="Why do you want to change your due date?"
                   style={{
                     width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)', color: 'var(--text-primary)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-surface)', color: 'var(--text-primary)',
                     fontSize: '0.875rem', fontFamily: 'inherit', resize: 'vertical',
                     minHeight: '100px',
                   }}
@@ -142,7 +143,7 @@ export function DueDateChangeRequest({ currentAnniversaryDay }: Props) {
                   disabled={loading}
                   style={{
                     padding: '0.65rem 1.5rem', borderRadius: '0.5rem',
-                    border: '1px solid var(--border-color)', background: 'transparent',
+                    border: '1px solid var(--border)', background: 'transparent',
                     color: 'var(--text-primary)', cursor: loading ? 'not-allowed' : 'pointer',
                     fontWeight: 600, fontSize: '0.875rem',
                   }}

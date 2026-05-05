@@ -56,7 +56,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'nowrap' }}>
+        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (

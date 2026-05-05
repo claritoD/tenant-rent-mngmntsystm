@@ -76,7 +76,7 @@ export function DueDateChangeAction({ requestId, tenantName, currentDay, request
         <div
           style={{
             width: '100%', padding: '0.75rem', borderRadius: '0.5rem',
-            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
             marginBottom: '0.5rem',
           }}
         >
@@ -86,8 +86,8 @@ export function DueDateChangeAction({ requestId, tenantName, currentDay, request
             placeholder="Add a note for the tenant (optional)..."
             style={{
               width: '100%', padding: '0.5rem', borderRadius: '0.25rem',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-primary)', color: 'var(--text-primary)',
+              border: '1px solid var(--border)',
+              background: 'var(--bg-surface)', color: 'var(--text-primary)',
               fontSize: '0.75rem', fontFamily: 'inherit', resize: 'vertical',
               minHeight: '60px',
             }}

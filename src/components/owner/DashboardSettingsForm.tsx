@@ -79,7 +79,7 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
         style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
           padding: '0.6rem 1.25rem', borderRadius: '0.5rem',
-          background: 'var(--border-color)', border: 'none',
+          background: 'var(--border)', border: 'none',
           color: 'var(--text-primary)', cursor: 'pointer',
           fontWeight: 600, fontSize: '0.875rem',
         }}
@@ -92,15 +92,16 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 50,
+          zIndex: 9999,
         }} onClick={() => setIsOpen(false)}>
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: 'var(--bg-secondary)', borderRadius: '1rem',
+              background: 'var(--bg-card)', borderRadius: '1rem',
               padding: '2rem', maxWidth: '600px', width: '90%',
               maxHeight: '80vh', overflowY: 'auto',
-              boxShadow: '0 20px 25px rgba(0,0,0,0.1)',
+              boxShadow: '0 20px 25px rgba(0,0,0,0.15)',
+              position: 'relative',
             }}
           >
             <h2 style={{ marginBottom: '1rem', fontWeight: 700 }}>Customize Dashboard</h2>
@@ -126,7 +127,7 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
                 style={{
                   padding: '0.5rem 1rem', borderRadius: '0.5rem',
                   background: 'transparent', color: 'var(--text-primary)', 
-                  border: '1px solid var(--border-color)',
+                  border: '1px solid var(--border)',
                   cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.75rem',
                 }}
               >
@@ -141,8 +142,8 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
                   onClick={() => toggleOption(key as keyof OwnerDashboardSettings)}
                   style={{
                     padding: '1rem', borderRadius: '0.5rem',
-                    background: (settings as any)[key] ? 'var(--brand-600)' : 'var(--bg-primary)',
-                    border: `1px solid ${(settings as any)[key] ? 'var(--brand-600)' : 'var(--border-color)'}`,
+                    background: (settings as any)[key] ? 'var(--brand-600)' : 'var(--bg-surface)',
+                    border: `1px solid ${(settings as any)[key] ? 'var(--brand-600)' : 'var(--border)'}`,
                     cursor: loading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s ease',
                   }}
@@ -177,7 +178,7 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
                 disabled={loading}
                 style={{
                   padding: '0.65rem 1.5rem', borderRadius: '0.5rem',
-                  border: '1px solid var(--border-color)', background: 'transparent',
+                  border: '1px solid var(--border)', background: 'transparent',
                   color: 'var(--text-primary)', cursor: loading ? 'not-allowed' : 'pointer',
                   fontWeight: 600, fontSize: '0.875rem',
                 }}
