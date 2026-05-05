@@ -34,16 +34,16 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         padding: '0 1.5rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         minHeight: '64px',
-        gap: '1rem',
+        gap: '1.5rem',
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
       }}>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <div style={{
             width: '32px', height: '32px',
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
@@ -56,7 +56,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <nav className="hide-mobile" style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'nowrap', flex: 1 }}>
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
@@ -68,6 +68,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
                   color: isActive ? 'var(--brand-500)' : 'var(--text-secondary)',
                   background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
                   transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
                 }}>
                 <Icon size={16} />
                 {label}
@@ -77,10 +78,10 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         </nav>
 
         {/* User & logout (Desktop) */}
-        <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto', flexShrink: 0 }}>
+        <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto', flexShrink: 0, flexWrap: 'nowrap' }}>
           <ThemeToggle />
-          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>👋 {tenantName}</span>
-          <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '0.4rem 1rem' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>👋 {tenantName}</span>
+          <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '0.4rem 1rem', flexShrink: 0 }}>
             <LogOut size={15} /> Sign Out
           </button>
         </div>
@@ -89,7 +90,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="show-mobile btn btn-ghost" 
-          style={{ padding: '0.5rem' }}
+          style={{ padding: '0.5rem', marginLeft: 'auto', flexShrink: 0 }}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
