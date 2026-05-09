@@ -5,6 +5,7 @@ import type { Tenant } from '@/types/database.types';
 import { sendEmail } from '@/lib/nodemailer';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { triggerOwnerAlerts } from './notifications';
 
 export async function verifyPayment(paymentId: string) {
   try {
@@ -150,6 +151,38 @@ export async function ownerRecordPayment(formData: FormData) {
 
     revalidatePath('/owner/payments');
     revalidatePath('/owner');
+
+    return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}
+
+export async function submitTenantPayment(data: { amount: number; method: 'cash' | 'gcash'; gcashRef: string | null; proofUrl: string | null; }) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated.');
+
+    const { error: dbError } = await supabase.from('payments').insert({
+      tenant_id: user.id,
+      amount: data.amount,
+      payment_method: data.method,
+      gcash_ref: data.gcashRef,
+      proof_url: data.proofUrl,
+      status: 'pending',
+    });
+
+    if (dbError) throw dbError;
+
+    // Fetch tenant details for the notification
+    const { data: tenant } = await supabase.from('tenants').select('name').eq('id', user.id).single();
+
+    await triggerOwnerAlerts(
+      'New Payment Received',
+      `${tenant?.name || 'A tenant'} just submitted a ${data.method === 'gcash' ? 'GCash' : 'Cash'} payment of ₱${data.amount.toFixed(2)}. Please review and verify it.`,
+      `${process.env.NEXT_PUBLIC_SITE_URL}/owner/payments`
+    );
 
     return { success: true };
   } catch (err: unknown) {

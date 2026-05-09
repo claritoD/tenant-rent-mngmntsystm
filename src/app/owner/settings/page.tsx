@@ -1,5 +1,6 @@
 import { SettingsForm } from '@/components/owner/SettingsForm';
 import { ChangePasswordForm } from '@/components/shared/ChangePasswordForm';
+import { PushNotificationToggle } from '@/components/owner/PushNotificationToggle';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Settings' };
@@ -14,6 +15,7 @@ export default function SettingsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <SettingsForm />
+        <PushNotificationToggle />
         <ChangePasswordForm />
       </div>
     </div>

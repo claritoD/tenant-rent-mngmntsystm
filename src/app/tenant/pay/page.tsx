@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Upload, Banknote, Smartphone, Check } from 'lucide-react';
+import { submitTenantPayment } from '@/app/actions/payments';
 
 
 export default function PayPage() {
@@ -53,16 +54,14 @@ export default function PayPage() {
         proofUrl = publicUrl;
       }
 
-      const { error: dbError } = await supabase.from('payments').insert({
-        tenant_id: user.id,
+      const res = await submitTenantPayment({
         amount: parseFloat(amount),
-        payment_method: method,
-        gcash_ref: method === 'gcash' ? gcashRef.trim() : null,
-        proof_url: proofUrl,
-        status: 'pending',
+        method,
+        gcashRef: method === 'gcash' ? gcashRef.trim() : null,
+        proofUrl
       });
 
-      if (dbError) throw dbError;
+      if (res.error) throw new Error(res.error);
 
       setSuccess(true);
       setAmount(''); setGcashRef(''); setProofFile(null);

@@ -5,6 +5,7 @@ import type { Tenant, DueDateChangeRequest } from '@/types/database.types';
 import { sendEmail } from '@/lib/nodemailer';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { triggerOwnerAlerts } from './notifications';
 
 export async function submitDueDateChangeRequest(
   requestedDay: number,
@@ -52,6 +53,12 @@ export async function submitDueDateChangeRequest(
       });
 
     if (insertErr) throw insertErr;
+
+    await triggerOwnerAlerts(
+      'Due Date Extension Request',
+      `${tenant?.name || 'A tenant'} requested to change their due date to the ${requestedDay}th. Reason: "${reason || 'None provided'}".`,
+      `${process.env.NEXT_PUBLIC_SITE_URL}/owner/due-date-requests`
+    );
 
     revalidatePath('/tenant');
 

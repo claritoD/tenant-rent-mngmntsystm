@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { triggerOwnerAlerts } from './notifications';
 
 export async function createMaintenanceTicket(formData: FormData) {
   try {
@@ -35,6 +36,15 @@ export async function createMaintenanceTicket(formData: FormData) {
     });
 
     if (error) throw error;
+
+    // Fetch tenant details for the notification
+    const { data: tenant } = await supabase.from('tenants').select('name').eq('id', user.id).single();
+
+    await triggerOwnerAlerts(
+      'New Maintenance Ticket',
+      `${tenant?.name || 'A tenant'} reported an issue: "${description}".`,
+      `${process.env.NEXT_PUBLIC_SITE_URL}/owner/maintenance`
+    );
 
     revalidatePath('/tenant/maintenance');
     revalidatePath('/owner/maintenance');
