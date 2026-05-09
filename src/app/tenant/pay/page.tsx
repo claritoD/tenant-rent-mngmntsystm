@@ -82,7 +82,7 @@ export default function PayPage() {
         <p>Select your payment method and submit details for verification.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
         {/* GCash Card */}
         <div 
           onClick={() => setMethod('gcash')}

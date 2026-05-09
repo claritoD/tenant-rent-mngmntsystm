@@ -24,7 +24,7 @@ export default async function ExpensesPage() {
         <p>Record and monitor all property-related spending.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <AddExpenseForm />
 
         <div className="card">

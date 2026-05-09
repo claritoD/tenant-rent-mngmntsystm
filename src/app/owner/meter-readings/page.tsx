@@ -23,7 +23,7 @@ export default async function MeterReadingsPage() {
         <p>Enter electric and water readings (usually around the 18th of the month).</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <MeterReadingForm tenants={tenants ?? []} />
 
         <div className="card">
