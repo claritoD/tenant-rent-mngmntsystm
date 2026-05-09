@@ -1,6 +1,6 @@
 -- Paste this into your Supabase SQL Editor and run it
 
-CREATE TABLE login_attempts (
+CREATE TABLE IF NOT EXISTS login_attempts (
     email TEXT PRIMARY KEY,
     attempts INT DEFAULT 1,
     last_attempt TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())

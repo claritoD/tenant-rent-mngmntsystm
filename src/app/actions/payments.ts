@@ -7,6 +7,7 @@ import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { triggerOwnerAlerts } from './notifications';
 
+
 export async function verifyPayment(paymentId: string) {
   try {
     const supabase = await createClient();
@@ -158,4 +159,43 @@ export async function ownerRecordPayment(formData: FormData) {
   }
 }
 
+export async function submitTenantPayment(data: {
+  amount: number;
+  method: 'cash' | 'gcash';
+  gcashRef: string | null;
+  proofUrl: string | null;
+}) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated.');
 
+    const { error: dbError } = await supabase.from('payments').insert({
+      tenant_id: user.id,
+      amount: data.amount,
+      payment_method: data.method,
+      gcash_ref: data.gcashRef,
+      proof_url: data.proofUrl,
+      status: 'pending',
+    });
+
+    if (dbError) throw dbError;
+
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('name')
+      .eq('id', user.id)
+      .single();
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentease.vercel.app';
+    await triggerOwnerAlerts(
+      'New Payment Submitted',
+      `${tenant?.name ?? 'A tenant'} submitted a ${data.method === 'gcash' ? 'GCash' : 'Cash'} payment of ₱${data.amount.toFixed(2)}. Please review and verify it.`,
+      `${siteUrl}/owner/payments`
+    ).catch(console.error);
+
+    return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}

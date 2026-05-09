@@ -5,6 +5,7 @@ import type { Tenant, DueDateChangeRequest } from '@/types/database.types';
 import { sendEmail } from '@/lib/nodemailer';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { triggerOwnerAlerts } from '@/app/actions/notifications';
 
 export async function submitDueDateChangeRequest(
   requestedDay: number,
@@ -52,6 +53,14 @@ export async function submitDueDateChangeRequest(
       });
 
     if (insertErr) throw insertErr;
+
+    // Notify owner
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentease.vercel.app';
+    await triggerOwnerAlerts(
+      'Due Date Extension Request',
+      `${tenant.name} has requested to change their bill due date from day ${tenant.anniversary_day} to day ${requestedDay}. Reason: "${reason || 'No reason provided'}".`,
+      `${siteUrl}/owner/due-date-requests`
+    ).catch(console.error);
 
     revalidatePath('/tenant');
 

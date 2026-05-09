@@ -2,27 +2,18 @@
 
 import { useState } from 'react';
 import { Droplet } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { requestWaterRefill } from '@/app/actions/waterrefill';
 import { useRouter } from 'next/navigation';
 
 export function WaterRefillRequest() {
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
   const router = useRouter();
 
   async function handleRequest() {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await supabase.from('water_refills').insert({
-        tenant_id: user.id,
-        status: 'pending',
-      });
-
-      if (error) throw error;
-      
+      const res = await requestWaterRefill();
+      if (res.error) throw new Error(res.error);
       router.refresh();
     } catch (err: unknown) {
       console.error(err);
@@ -43,6 +34,7 @@ export function WaterRefillRequest() {
         color: '#fff', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
         fontWeight: 600, fontSize: '0.875rem',
         boxShadow: '0 4px 12px rgba(59,130,246,0.3)',
+        opacity: loading ? 0.7 : 1,
       }}
     >
       <Droplet size={18} />

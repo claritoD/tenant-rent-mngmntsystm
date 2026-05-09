@@ -3,16 +3,25 @@
 import { createClient } from '@/lib/supabase/server';
 import webpush from 'web-push';
 import { sendEmail } from '@/lib/nodemailer';
-import { createClient as createServerClient } from '@supabase/supabase-js';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 
-// Setup web-push
+// Setup web-push VAPID details
 webpush.setVapidDetails(
-  'mailto:' + (process.env.GMAIL_EMAIL || 'admin@example.com'),
+  'mailto:' + (process.env.GMAIL_EMAIL ?? 'admin@example.com'),
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
 
-export async function savePushSubscription(subscription: webpush.PushSubscription) {
+function getAdminSupabase() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
+/** Called by the owner to register their device */
+export async function savePushSubscription(subscription: object) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -20,10 +29,7 @@ export async function savePushSubscription(subscription: webpush.PushSubscriptio
 
     const { error } = await supabase
       .from('push_subscriptions')
-      .upsert({ 
-        user_id: user.id, 
-        subscription 
-      }, { onConflict: 'user_id, subscription' });
+      .upsert({ user_id: user.id, subscription }, { onConflict: 'user_id' });
 
     if (error) throw error;
     return { success: true };
@@ -32,74 +38,90 @@ export async function savePushSubscription(subscription: webpush.PushSubscriptio
   }
 }
 
-// Internal helper for server actions
-export async function sendWebPushToOwner(title: string, body: string, url: string = 'https://rentease.vercel.app') {
+/** Fetches the owner's user_id by finding the user with role=owner */
+async function getOwnerUserId(): Promise<string | null> {
   try {
-    const adminSupabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
+    const adminSupabase = getAdminSupabase();
+    const { data } = await adminSupabase.auth.admin.listUsers({ perPage: 100 });
+    const owner = data?.users?.find(u => u.user_metadata?.role === 'owner');
+    return owner?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
-    // Get the owner
-    const { data: owners } = await adminSupabase.from('owner_settings').select('owner_id').limit(1);
-    const ownerId = owners?.[0]?.owner_id;
-    if (!ownerId) return { error: 'Owner not found.' };
+/** Sends a web push notification to all of the owner's registered devices */
+async function sendWebPushToOwner(title: string, body: string, url: string) {
+  try {
+    const ownerId = await getOwnerUserId();
+    if (!ownerId) return;
 
+    const adminSupabase = getAdminSupabase();
     const { data: subs } = await adminSupabase
       .from('push_subscriptions')
-      .select('subscription')
+      .select('id, subscription')
       .eq('user_id', ownerId);
 
-    if (subs && subs.length > 0) {
-      const payload = JSON.stringify({ title, body, url });
-      for (const sub of subs) {
-        try {
-          await webpush.sendNotification(sub.subscription as unknown as webpush.PushSubscription, payload);
-        } catch (e: unknown) {
-          if ((e as { statusCode?: number }).statusCode === 410 || (e as { statusCode?: number }).statusCode === 404) {
-            // Subscription has expired or is no longer valid
-            await adminSupabase.from('push_subscriptions').delete().eq('subscription', sub.subscription);
-          } else {
-             console.error('Error sending push notification:', e);
-          }
+    if (!subs || subs.length === 0) return;
+
+    const payload = JSON.stringify({ title, body, url });
+
+    for (const sub of subs) {
+      try {
+        await webpush.sendNotification(
+          sub.subscription as unknown as webpush.PushSubscription,
+          payload
+        );
+      } catch (e: unknown) {
+        const status = (e as { statusCode?: number }).statusCode;
+        if (status === 410 || status === 404) {
+          // Subscription expired — clean it up
+          await adminSupabase.from('push_subscriptions').delete().eq('id', sub.id);
+        } else {
+          console.error('Push send error:', e);
         }
       }
     }
-    return { success: true };
   } catch (err) {
-    console.error('Failed to send web push:', err);
-    return { error: (err as Error).message };
+    console.error('sendWebPushToOwner failed:', err);
   }
 }
 
-export async function sendEmailAlertToOwner(subject: string, htmlMessage: string) {
+/** Sends an email alert directly to the owner's Gmail */
+async function sendEmailAlertToOwner(subject: string, body: string, url: string) {
   try {
-    const ownerEmail = process.env.GMAIL_EMAIL; // Single-owner setup
-    if (!ownerEmail) return { error: 'Owner email not configured.' };
+    const ownerEmail = process.env.GMAIL_EMAIL;
+    if (!ownerEmail) return;
 
     await sendEmail({
       to: ownerEmail,
-      subject: subject,
-      html: htmlMessage,
+      subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #6366f1;">${subject}</h2>
+          <p style="color: #334155; font-size: 15px;">${body}</p>
+          <a href="${url}" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            View in Dashboard
+          </a>
+          <p style="margin-top: 24px; font-size: 12px; color: #94a3b8;">This is an automated alert from RentsEasy.</p>
+        </div>
+      `,
     });
-    return { success: true };
   } catch (err) {
-    console.error('Failed to send email alert:', err);
-    return { error: (err as Error).message };
+    console.error('sendEmailAlertToOwner failed:', err);
   }
 }
 
+/**
+ * Primary public function: fires both web push AND email alert to the owner.
+ * Non-blocking — all errors are caught internally.
+ */
 export async function triggerOwnerAlerts(title: string, message: string, url: string) {
-  // Fire both simultaneously
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentease.vercel.app';
+  const fullUrl = url.startsWith('http') ? url : `${siteUrl}${url}`;
+
   await Promise.allSettled([
-    sendWebPushToOwner(title, message, url),
-    sendEmailAlertToOwner(title, `
-      <div style="font-family: sans-serif; padding: 20px;">
-        <h2 style="color: #6366f1;">${title}</h2>
-        <p>${message}</p>
-        <a href="${url}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 6px;">View Dashboard</a>
-      </div>
-    `)
+    sendWebPushToOwner(title, message, fullUrl),
+    sendEmailAlertToOwner(title, message, fullUrl),
   ]);
 }
