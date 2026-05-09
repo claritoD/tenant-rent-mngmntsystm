@@ -8,4 +8,9 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 );
 
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
--- Server actions use the service_role key so no RLS policies are needed.
+
+-- Allow authenticated users to manage only their own subscription
+CREATE POLICY "Users can upsert their own subscription"
+  ON push_subscriptions FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
