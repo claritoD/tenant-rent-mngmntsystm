@@ -9,6 +9,8 @@ import { createClient as createServerClient } from '@supabase/supabase-js';
 export async function generateBill(tenantId: string) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
     // 1. Fetch Tenant & Unit
     const { data: tenant, error: tenantErr } = await supabase

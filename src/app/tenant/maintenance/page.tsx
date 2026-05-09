@@ -25,7 +25,7 @@ export default async function TenantMaintenancePage() {
         <p>Report issues with your unit and track their resolution status.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem', alignItems: 'start' }}>
+      <div className="grid-maintenance">
         <NewTicketForm />
 
         <div className="card">

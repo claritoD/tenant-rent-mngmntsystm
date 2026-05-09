@@ -76,7 +76,7 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '1rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+      <nav style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || (href !== '/owner' && pathname.startsWith(href));
           return (
@@ -85,12 +85,12 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
               href={href}
               onClick={onNav}
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.625rem',
-                padding: '0.6rem 0.875rem',
+                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                padding: '0.75rem 1rem',
                 borderRadius: '0.5rem',
                 textDecoration: 'none',
                 fontWeight: isActive ? 600 : 400,
-                fontSize: '0.875rem',
+                fontSize: '0.9rem',
                 color: isActive ? '#fff' : 'var(--text-secondary)',
                 background: isActive ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'transparent',
                 boxShadow: isActive ? '0 2px 12px rgba(99,102,241,0.35)' : 'none',
@@ -106,13 +106,13 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
       </nav>
 
       {/* Logout */}
-      <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: '1rem', borderTop: '1px solid var(--border)' }}>
         <button
           onClick={handleLogout}
           className="btn btn-ghost"
-          style={{ width: '100%', justifyContent: 'flex-start', gap: '0.625rem' }}
+          style={{ width: '100%', justifyContent: 'flex-start', gap: '0.75rem', padding: '0.75rem 1rem', fontSize: '0.9rem' }}
         >
-          <LogOut size={16} />
+          <LogOut size={18} />
           Sign Out
         </button>
         <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>

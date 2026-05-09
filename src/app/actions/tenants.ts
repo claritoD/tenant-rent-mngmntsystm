@@ -10,6 +10,8 @@ import type { Tenant } from '@/types/database.types';
 export async function archiveTenant(tenantId: string) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
     // 1. Mark as inactive and clear unit association
     const { error } = await supabase
@@ -33,6 +35,8 @@ export async function archiveTenant(tenantId: string) {
 export async function updateTenant(tenantId: string, data: Partial<Tenant>) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
     const { error } = await supabase
       .from('tenants')
       .update(data)
@@ -88,6 +92,9 @@ export async function quickStartTenant(data: {
 
     // 2. Create Tenant Record
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
+
     const { error: tErr } = await supabase.from('tenants').insert({
       id: userId,
       name: data.name,

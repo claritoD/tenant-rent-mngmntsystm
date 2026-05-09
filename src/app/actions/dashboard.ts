@@ -9,7 +9,7 @@ export async function getOrCreateDashboardSettings() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user) return { error: 'Not authenticated.' };
+    if (!user || user.user_metadata?.role !== 'owner') return { error: 'Unauthorized.' };
 
     // Try to get existing settings
     let { data: settings, error: getErr } = await supabase
@@ -55,7 +55,7 @@ export async function updateDashboardSettings(updates: Partial<OwnerDashboardSet
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user) return { error: 'Not authenticated.' };
+    if (!user || user.user_metadata?.role !== 'owner') return { error: 'Unauthorized.' };
 
     const { data: settings, error: updateErr } = await supabase
       .from('owner_dashboard_settings')
@@ -80,6 +80,8 @@ export async function updateDashboardSettings(updates: Partial<OwnerDashboardSet
 export async function getDashboardAnalytics() {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') return null;
 
     // Get all analytics data in parallel
     const [

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Home, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
+import { checkRateLimit, incrementLoginAttempt, resetLoginAttempts } from '@/app/actions/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,15 +19,24 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const rateLimit = await checkRateLimit(email);
+    if (rateLimit.locked) {
+      setError(`Account locked due to too many failed attempts. Try again in ${rateLimit.remainingMinutes} minutes.`);
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (authError) {
-      setError(authError.message);
+      await incrementLoginAttempt(email);
+      setError('Invalid email or password.');
       setLoading(false);
       return;
     }
+
+    await resetLoginAttempts(email);
 
     const role = data.user?.user_metadata?.role;
     
@@ -174,6 +185,11 @@ export default function LoginPage() {
                 >
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
+                <Link href="/forgot-password" style={{ color: '#8b5cf6', fontSize: '0.875rem', textDecoration: 'none' }}>
+                  Forgot password?
+                </Link>
               </div>
             </div>
 
