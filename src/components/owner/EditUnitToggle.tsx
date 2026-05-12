@@ -6,6 +6,7 @@ import { updateUnit } from '@/app/actions/units';
 import { createClient } from '@/lib/supabase/client';
 import type { Unit } from '@/types/database.types';
 import Image from 'next/image';
+import { compressImage } from '@/utils/image';
 
 export function EditUnitToggle({ unit }: { unit: Unit }) {
   const [open, setOpen] = useState(false);
