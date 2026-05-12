@@ -125,7 +125,11 @@ export function AddUnitForm({ onClose }: Props) {
     display: 'block', marginBottom: '0.3rem',
     fontSize: '0.775rem', fontWeight: 500, color: 'var(--text-secondary)',
   };
-  const gridTwo: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' };
+  const gridTwo: React.CSSProperties = { 
+    display: 'grid', 
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', 
+    gap: '0.75rem' 
+  };
 
   return (
     <div style={{

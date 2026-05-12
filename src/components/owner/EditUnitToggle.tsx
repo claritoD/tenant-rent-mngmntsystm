@@ -64,7 +64,11 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const res = await updateUnit(unit.id, formData);
+    const dataToSubmit = {
+      ...formData,
+      property_id: formData.property_id || null,
+    };
+    const res = await updateUnit(unit.id, dataToSubmit);
     if (res.error) alert(res.error);
     else setOpen(false);
     setLoading(false);
@@ -90,17 +94,18 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
           <div className="card" style={{ 
             width: '100%', maxWidth: '500px', maxHeight: '100%', overflowY: 'auto',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1)',
-            position: 'relative', border: '1px solid var(--border)'
+            position: 'relative', border: '1px solid var(--border)',
+            padding: '0 1.5rem 1.5rem'
           }}>
             <div style={{ 
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               marginBottom: '1.5rem', position: 'sticky', top: 0, background: 'var(--bg-card)', 
-              zIndex: 10, padding: '0.5rem 0'
+              zIndex: 10, padding: '1rem 0', borderBottom: '1px solid var(--border)'
             }}>
               <h2 style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>Edit Unit Details</h2>
               <button 
                 onClick={() => setOpen(false)} 
-                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '50%', padding: '0.5rem', cursor: 'pointer', display: 'flex' }}
+                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '50%', padding: '0.4rem', cursor: 'pointer', display: 'flex' }}
               >
                 <X size={20} />
               </button>
@@ -190,7 +195,7 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
                 </div>
               </div>
 
-              <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', paddingTop: '1rem', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+              <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', paddingTop: '1rem', paddingBottom: '1rem', borderTop: '1px solid var(--border)', zIndex: 10 }}>
                 <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.75rem' }}>
                   {loading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                 </button>

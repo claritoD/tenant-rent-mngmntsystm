@@ -68,36 +68,72 @@ export function PropertyManager() {
             </div>
 
             {/* Add Form */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.75rem', marginBottom: '2rem', padding: '1rem', background: 'var(--bg-base)', borderRadius: '0.5rem' }}>
-              <input className="input" placeholder="Building Name (e.g. Building A)" value={newName} onChange={e => setNewName(e.target.value)} />
-              <input className="input" placeholder="Address / Location" value={newAddress} onChange={e => setNewAddress(e.target.value)} />
-              <button className="btn btn-primary" onClick={handleAdd} disabled={loading} style={{ padding: '0.5rem 1rem' }}>
-                <Plus size={18} />
-              </button>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              gap: '1rem', 
+              marginBottom: '2rem', 
+              padding: '1.25rem', 
+              background: 'var(--bg-surface)', 
+              borderRadius: '0.75rem',
+              border: '1px solid var(--border)'
+            }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Add New Building</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <input className="input" style={{ flex: '1 1 200px' }} placeholder="Name (e.g. Building A)" value={newName} onChange={e => setNewName(e.target.value)} />
+                <input className="input" style={{ flex: '2 1 250px' }} placeholder="Address / Location" value={newAddress} onChange={e => setNewAddress(e.target.value)} />
+                <button className="btn btn-primary" onClick={handleAdd} disabled={loading} style={{ padding: '0.6rem 1.25rem' }}>
+                  <Plus size={18} /> Add
+                </button>
+              </div>
             </div>
 
             {/* List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Existing Properties</p>
               {properties.map(p => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: '0.5rem' }}>
+                <div key={p.id} style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  gap: '0.75rem', 
+                  padding: '1rem', 
+                  border: '1px solid var(--border)', 
+                  borderRadius: '0.75rem',
+                  background: editingId === p.id ? 'rgba(99,102,241,0.03)' : 'transparent'
+                }}>
                   {editingId === p.id ? (
-                    <>
-                      <input className="input" value={p.name} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, name: e.target.value} : item))} />
-                      <input className="input" value={p.address} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, address: e.target.value} : item))} />
-                      <button className="btn btn-success" onClick={() => handleUpdate(p.id)} style={{ padding: '0.5rem' }}><Check size={18} /></button>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontWeight: 600 }}>{p.name}</p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.address || 'No address'}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <input className="input" style={{ flex: 1 }} value={p.name} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, name: e.target.value} : item))} />
+                        <input className="input" style={{ flex: 2 }} value={p.address} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, address: e.target.value} : item))} />
                       </div>
-                      <button className="btn btn-ghost" onClick={() => setEditingId(p.id)} style={{ padding: '0.5rem' }}><Edit2 size={16} /></button>
-                      <button className="btn btn-ghost" onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem', color: '#ef4444' }}><Trash2 size={16} /></button>
-                    </>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        <button className="btn btn-ghost" onClick={() => setEditingId(null)}>Cancel</button>
+                        <button className="btn btn-success" onClick={() => handleUpdate(p.id)} style={{ gap: '0.4rem' }}>
+                          <Check size={16} /> Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: 600, fontSize: '1rem' }}>{p.name}</p>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{p.address || 'No address set'}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button className="btn btn-ghost" onClick={() => setEditingId(p.id)} style={{ padding: '0.5rem' }}><Edit2 size={16} /></button>
+                        <button className="btn btn-ghost" onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem', color: '#ef4444' }}><Trash2 size={16} /></button>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
+              {properties.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)', background: 'var(--bg-base)', borderRadius: '0.75rem', border: '1px dashed var(--border)' }}>
+                  <Building size={32} style={{ marginBottom: '1rem', opacity: 0.3 }} />
+                  <p>No buildings added yet.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
