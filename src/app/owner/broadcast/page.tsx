@@ -1,31 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { Megaphone, Send, History, CheckCircle2 } from 'lucide-react';
+import { Megaphone, Send, History, CheckCircle2, Pin } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import { broadcastMessageToTenants } from '@/app/actions/notifications';
 
 export default function BroadcastPage() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<string>('all');
+  const [properties, setProperties] = useState<{id: string, name: string}[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    async function loadProperties() {
+      const { data } = await (await createClient()).from('properties').select('id, name').order('name');
+      if (data) setProperties(data);
+    }
+    loadProperties();
+  }, []);
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!confirm('Are you sure you want to send this broadcast to ALL active tenants?')) return;
+    const target = selectedProperty === 'all' ? 'ALL active tenants' : `tenants in ${properties.find(p => p.id === selectedProperty)?.name}`;
+    if (!confirm(`Are you sure you want to send this broadcast to ${target}?`)) return;
 
     setLoading(true);
     setError('');
     setSuccess(false);
 
     try {
-      const res = await broadcastMessageToTenants(title, message);
+      const res = await broadcastMessageToTenants(title, message, isPinned, selectedProperty === 'all' ? null : selectedProperty);
       if (res?.error) throw new Error(res.error);
       
       setSuccess(true);
       setTitle('');
       setMessage('');
+      setIsPinned(false);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -65,6 +79,25 @@ export default function BroadcastPage() {
 
           <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
+              <label className="label" htmlFor="b-target">Target Audience</label>
+              <select 
+                id="b-target"
+                className="input"
+                value={selectedProperty}
+                onChange={e => setSelectedProperty(e.target.value)}
+                disabled={loading}
+              >
+                <option value="all">📢 All Active Tenants (Global)</option>
+                {properties.map(p => (
+                  <option key={p.id} value={p.id}>🏢 Only {p.name}</option>
+                ))}
+              </select>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                {selectedProperty === 'all' ? 'Every tenant across all buildings will receive this.' : `Only tenants assigned to ${properties.find(p => p.id === selectedProperty)?.name} will receive this.`}
+              </p>
+            </div>
+
+            <div>
               <label className="label" htmlFor="b-title">Headline / Subject</label>
               <input 
                 id="b-title"
@@ -89,6 +122,20 @@ export default function BroadcastPage() {
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-base)', padding: '0.75rem', borderRadius: '0.5rem', border: isPinned ? '1px solid #f59e0b' : '1px solid var(--border)', transition: 'all 0.2s' }}>
+              <input 
+                type="checkbox" 
+                id="b-pin"
+                checked={isPinned}
+                onChange={e => setIsPinned(e.target.checked)}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <label htmlFor="b-pin" style={{ fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', color: isPinned ? '#b45309' : 'var(--text-primary)' }}>
+                <Pin size={14} style={{ transform: isPinned ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} /> 
+                Pin to Bulletin Board (stays at the top)
+              </label>
             </div>
 
             <button 

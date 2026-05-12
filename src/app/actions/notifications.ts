@@ -46,7 +46,7 @@ export async function savePushSubscription(subscription: any) {
  * Sends a broadcast message to all active tenants via Push and Email.
  * Non-blocking, runs in background via Promise.allSettled.
  */
-export async function broadcastMessageToTenants(title: string, message: string) {
+export async function broadcastMessageToTenants(title: string, message: string, isPinned: boolean = false, propertyId: string | null = null) {
   try {
     const adminSupabase = getAdminSupabase();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentseasy.vercel.app';
@@ -56,14 +56,29 @@ export async function broadcastMessageToTenants(title: string, message: string) 
     await adminSupabase.from('announcements').insert({
       sender_id: owner?.id,
       title,
-      content: message
+      content: message,
+      is_pinned: isPinned,
+      property_id: propertyId
     });
 
-    // 2. Fetch all active tenants
-    const { data: tenants } = await adminSupabase
+    // 2. Fetch targeted active tenants
+    let query = adminSupabase
       .from('tenants')
       .select('id')
       .eq('is_active', true);
+    
+    if (propertyId) {
+      // Filter tenants by unit's property_id
+      const { data: unitsInProperty } = await adminSupabase
+        .from('units')
+        .select('id')
+        .eq('property_id', propertyId);
+      
+      const unitIds = unitsInProperty?.map(u => u.id) || [];
+      query = query.in('unit_id', unitIds);
+    }
+
+    const { data: tenants } = await query;
 
     if (!tenants || tenants.length === 0) return;
     const tenantIds = tenants.map(t => t.id);

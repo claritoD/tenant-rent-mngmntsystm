@@ -9,21 +9,40 @@ interface Props {
   onClose?: () => void;
 }
 
+interface Property {
+  id: string;
+  name: string;
+}
+
 const DEFAULT_FORM = {
   unit_name: '',
   base_rent: '',
   map_location_url: '',
+  property_id: '',
 };
 
 export function AddUnitForm({ onClose }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [interiorFiles, setInteriorFiles] = useState<File[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Fetch properties for selection
+  useState(() => {
+    async function loadProperties() {
+      const { data } = await supabase.from('properties').select('id, name').order('name');
+      if (data) {
+        setProperties(data);
+        if (data.length > 0) setForm(f => ({ ...f, property_id: data[0].id }));
+      }
+    }
+    loadProperties();
+  });
 
   function set(key: keyof typeof DEFAULT_FORM, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -73,6 +92,7 @@ export function AddUnitForm({ onClose }: Props) {
         base_rent: parseFloat(form.base_rent || '0'),
         interior_photos: interiorUrls,
         map_location_url: form.map_location_url.trim() || null,
+        property_id: form.property_id || null,
       });
 
       if (insertError) throw insertError;
@@ -137,6 +157,16 @@ export function AddUnitForm({ onClose }: Props) {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ ...gridTwo }}>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle} htmlFor="u-prop">Property / Building *</label>
+            <select id="u-prop" required style={inputStyle}
+              value={form.property_id} onChange={e => set('property_id', e.target.value)}>
+              {properties.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+              {!properties.length && <option disabled>No buildings added yet</option>}
+            </select>
+          </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <label style={labelStyle} htmlFor="u-name">Unit Name / Identifier *</label>
             <input id="u-name" type="text" required style={inputStyle}

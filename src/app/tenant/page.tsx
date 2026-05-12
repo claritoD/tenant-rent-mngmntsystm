@@ -4,6 +4,7 @@ import { formatPeso, formatDate, ordinal } from '@/utils/format';
 import { nextAnniversaryDate } from '@/utils/billing';
 import { WaterRefillRequest } from '@/components/tenant/WaterRefillRequest';
 import { DueDateChangeRequest } from '@/components/tenant/DueDateChangeRequest';
+import { Pin } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'My Dashboard' };
@@ -18,7 +19,7 @@ export default async function TenantDashboardPage() {
     supabase.from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
     supabase.from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
     supabase.from('water_refills').select('*').eq('tenant_id', user.id).order('requested_at', { ascending: false }).limit(5),
-    supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(3),
+    supabase.from('announcements').select('*').order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(5),
   ]);
 
   if (!tenant) return <p>Tenant record not found. Contact your landlord.</p>;
@@ -47,9 +48,17 @@ export default async function TenantDashboardPage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {announcements.map(ann => (
-              <div key={ann.id} className="card" style={{ padding: '1rem 1.25rem', borderLeft: '4px solid #f59e0b', background: 'rgba(245,158,11,0.02)' }}>
+              <div key={ann.id} className="card" style={{ 
+                padding: '1rem 1.25rem', 
+                borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #6366f1', 
+                background: ann.is_pinned ? 'rgba(245,158,11,0.03)' : 'rgba(99,102,241,0.02)',
+                boxShadow: ann.is_pinned ? '0 4px 12px rgba(245,158,11,0.1)' : 'none'
+              }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                  <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {ann.is_pinned && <Pin size={14} style={{ color: '#f59e0b', transform: 'rotate(45deg)' }} />}
+                    <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
+                  </div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
                 </div>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.content}</p>

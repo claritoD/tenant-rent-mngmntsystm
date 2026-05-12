@@ -10,7 +10,7 @@ export default async function TenantsPage() {
   const supabase = await createClient();
 
   const [{ data: tenants }, { data: units }] = await Promise.all([
-    supabase.from('tenants').select('*, unit:units(*)').order('name'),
+    supabase.from('tenants').select('*, unit:units(*, property:properties(*))').order('name'),
     supabase.from('units').select('id, unit_name, base_rent').order('unit_name'),
   ]);
 
@@ -52,7 +52,14 @@ export default async function TenantsPage() {
                     {t.name}
                   </Link>
                 </td>
-                <td style={{ color: 'var(--text-secondary)' }}>{(t.unit as { unit_name: string } | null)?.unit_name ?? '—'}</td>
+                <td style={{ color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand-600)' }}>
+                      {(t.unit as any)?.property?.name ?? 'No Building'}
+                    </span>
+                    <span>{(t.unit as { unit_name: string } | null)?.unit_name ?? '—'}</span>
+                  </div>
+                </td>
                 <td style={{ color: 'var(--text-secondary)' }}>{ordinal(t.anniversary_day)} of month</td>
                 <td>{formatPeso((t.unit as { base_rent: number } | null)?.base_rent ?? 0)}</td>
                 <td>

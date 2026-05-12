@@ -11,11 +11,22 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [properties, setProperties] = useState<{id: string, name: string}[]>([]);
   const [formData, setFormData] = useState({
     unit_name: unit.unit_name,
     base_rent: unit.base_rent,
     map_location_url: unit.map_location_url || '',
     interior_photos: unit.interior_photos ?? [],
+    property_id: unit.property_id || '',
+  });
+
+  useState(() => {
+    async function loadProperties() {
+      const supabase = createClient();
+      const { data } = await supabase.from('properties').select('id, name').order('name');
+      if (data) setProperties(data);
+    }
+    loadProperties();
   });
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -95,6 +106,14 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="label">Building / Property</label>
+                <select className="input" value={formData.property_id} onChange={e => setFormData({...formData, property_id: e.target.value})} required>
+                  {properties.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="input-group">
                   <label className="label">Unit Name</label>

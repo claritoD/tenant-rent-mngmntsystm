@@ -19,3 +19,5 @@ CREATE POLICY "Owner: full access to announcements"
 CREATE POLICY "Tenants: read-only access to announcements"
   ON announcements FOR SELECT
   USING (true);
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS is_pinned BOOLEAN DEFAULT false;
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS property_id UUID REFERENCES properties(id) ON DELETE SET NULL;
