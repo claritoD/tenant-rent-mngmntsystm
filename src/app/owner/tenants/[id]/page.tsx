@@ -15,12 +15,13 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: tenant }, { data: bills }, { data: payments }, { data: vaultDocs }, { data: allUnits }] = await Promise.all([
+  const [{ data: tenant }, { data: bills }, { data: payments }, { data: vaultDocs }, { data: allUnits }, { data: unbilledRefills }] = await Promise.all([
     supabase.from('tenants').select('*, unit:units(*)').eq('id', id).single(),
     supabase.from('bills').select('*').eq('tenant_id', id).order('bill_date', { ascending: false }).limit(12),
     supabase.from('payments').select('*').eq('tenant_id', id).order('date_submitted', { ascending: false }).limit(20),
     supabase.storage.from('vault').list(id),
     supabase.from('units').select('*').order('unit_name'),
+    supabase.from('water_refills').select('*').eq('tenant_id', id).eq('status', 'completed').eq('billed', false),
   ]);
 
   if (!tenant) notFound();
@@ -61,6 +62,66 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
       </div>
       
       {tenant.is_active && <MoveOutSettlement tenant={tenant} />}
+
+      {/* Live Payables Breakdown */}
+      <div className="card" style={{ marginBottom: '1.5rem', border: '1px solid var(--border-hover)', background: 'linear-gradient(to bottom right, var(--bg-surface), var(--bg-base))' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <h2 style={{ fontWeight: 600, fontSize: '1rem' }}>Live Payables Breakdown</h2>
+          <span className="badge badge-pending">Next Bill Preview</span>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.5rem' }}>
+          <div>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Fixed Monthly</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span>Base Rent:</span>
+                <span style={{ fontWeight: 600 }}>{formatPeso(unit?.base_rent ?? 0)}</span>
+              </div>
+              {tenant.has_wifi && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span>WiFi:</span>
+                  <span style={{ fontWeight: 600 }}>{formatPeso(tenant.wifi_rate)}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#ef4444' }}>
+                <span>Arrears:</span>
+                <span style={{ fontWeight: 600 }}>{formatPeso(tenant.arrears)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Current Accumulation</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <span>Tank Refills ({unbilledRefills?.length ?? 0}x):</span>
+                <span style={{ fontWeight: 600 }}>{formatPeso((unbilledRefills ?? []).reduce((s, r) => s + (r.amount || 0), 0))}</span>
+              </div>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.25rem' }}>
+                * Electric/Metered water added during billing.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: '1.5rem' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Estimated Total</p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {formatPeso(
+                (unit?.base_rent ?? 0) + 
+                (tenant.has_wifi ? tenant.wifi_rate : 0) + 
+                tenant.arrears + 
+                (unbilledRefills ?? []).reduce((s, r) => s + (r.amount || 0), 0)
+              )}
+            </p>
+            {tenant.credit_balance > 0 && (
+              <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.25rem' }}>
+                Minus {formatPeso(tenant.credit_balance)} credit balance
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Vault */}
       <div className="card" style={{ marginBottom: '1.5rem' }}>

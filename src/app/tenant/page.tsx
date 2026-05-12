@@ -13,11 +13,12 @@ export default async function TenantDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [{ data: tenant }, { data: latestBills }, { data: recentPayments }, { data: waterRefills }] = await Promise.all([
+  const [{ data: tenant }, { data: latestBills }, { data: recentPayments }, { data: waterRefills }, { data: announcements }] = await Promise.all([
     supabase.from('tenants').select('*, unit:units(*)').eq('id', user.id).single(),
     supabase.from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
     supabase.from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
     supabase.from('water_refills').select('*').eq('tenant_id', user.id).order('requested_at', { ascending: false }).limit(5),
+    supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(3),
   ]);
 
   if (!tenant) return <p>Tenant record not found. Contact your landlord.</p>;
@@ -36,6 +37,27 @@ export default async function TenantDashboardPage() {
         <h1>Hello, {tenant.name.split(' ')[0]} 👋</h1>
         <p>Unit: <strong>{unit?.unit_name ?? '—'}</strong> · Next bill due: <strong>{formatDate(nextBillDate.toISOString())}</strong> (your {ordinal(tenant.anniversary_day)})</p>
       </div>
+
+      {/* Announcements / Bulletin Board */}
+      {announcements && announcements.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bulletin Board</h2>
+            <div style={{ height: '2px', flex: 1, background: 'var(--border)', opacity: 0.5 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {announcements.map(ann => (
+              <div key={ann.id} className="card" style={{ padding: '1rem 1.25rem', borderLeft: '4px solid #f59e0b', background: 'rgba(245,158,11,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                  <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
+                </div>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.content}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Current Bill Spotlight */}
       {currentBill && (
