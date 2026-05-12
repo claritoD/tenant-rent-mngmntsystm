@@ -7,12 +7,30 @@ export type PaymentStatus = 'pending' | 'verified' | 'rejected';
 export type WaterRefillStatus = 'pending' | 'completed' | 'cancelled';
 export type DueDateChangeStatus = 'pending' | 'approved' | 'rejected';
 
+export interface Property {
+  id: string;
+  name: string;
+  address: string | null;
+  created_at: string;
+}
+
 export interface Unit {
   id: string;
   unit_name: string;
   base_rent: number;
   interior_photos: string[];
   map_location_url: string | null;
+  property_id: string | null;
+  created_at: string;
+}
+
+export interface Announcement {
+  id: string;
+  sender_id: string;
+  title: string;
+  content: string;
+  is_pinned: boolean;
+  property_id: string | null;
   created_at: string;
 }
 
@@ -170,6 +188,16 @@ export type Database = {
         Row: OwnerDashboardSettings;
         Insert: OwnerDashboardSettings;
         Update: Partial<OwnerDashboardSettings>;
+      };
+      properties: {
+        Row: Property;
+        Insert: Property;
+        Update: Partial<Property>;
+      };
+      announcements: {
+        Row: Announcement;
+        Insert: Announcement;
+        Update: Partial<Announcement>;
       };
     };
     Views: { [key: string]: { Row: never; Insert: never; Update: never } };
