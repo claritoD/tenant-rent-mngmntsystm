@@ -10,6 +10,19 @@ export async function requestWaterRefill() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated.');
 
+    // Duplicate protection: Check if there's already a pending request
+    const { data: existing } = await supabase
+      .from('water_refills')
+      .select('id')
+      .eq('tenant_id', user.id)
+      .eq('status', 'pending')
+      .limit(1)
+      .single();
+
+    if (existing) {
+      return { success: true, message: 'Request already pending.' };
+    }
+
     const { error } = await supabase.from('water_refills').insert({
       tenant_id: user.id,
       status: 'pending',

@@ -15,6 +15,21 @@ export async function createMaintenanceTicket(formData: FormData) {
 
     if (!description) throw new Error('Description is required.');
 
+    // Anti-spam: check for same description in last 60 seconds
+    const oneMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const { data: recent } = await supabase
+      .from('maintenance_tickets')
+      .select('id')
+      .eq('tenant_id', user.id)
+      .eq('description', description)
+      .gt('created_at', oneMinAgo)
+      .limit(1)
+      .single();
+
+    if (recent) {
+      return { success: true, message: 'Ticket already submitted.' };
+    }
+
     let photoUrl = null;
     if (photo && photo.size > 0) {
       const ext = photo.name.split('.').pop();

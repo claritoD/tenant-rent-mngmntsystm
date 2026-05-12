@@ -140,6 +140,8 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
             </tbody>
           </table>
         </div>
+      </div>
+
       {/* Danger Zone */}
       <div className="card" style={{ marginTop: '3rem', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.02)' }}>
         <h2 style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '1rem', color: '#ef4444' }}>Danger Zone</h2>

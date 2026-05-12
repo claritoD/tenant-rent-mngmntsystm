@@ -170,6 +170,38 @@ export async function submitTenantPayment(data: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated.');
 
+    // 1. Idempotency Check for GCash
+    if (data.method === 'gcash' && data.gcashRef) {
+      const { data: existing } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('gcash_ref', data.gcashRef)
+        .limit(1)
+        .single();
+      
+      if (existing) {
+        return { error: 'This GCash reference has already been submitted.' };
+      }
+    }
+
+    // 2. Anti-spam for Cash (check if same amount submitted in last 5 mins)
+    if (data.method === 'cash') {
+      const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: recent } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('tenant_id', user.id)
+        .eq('amount', data.amount)
+        .eq('payment_method', 'cash')
+        .gt('date_submitted', fiveMinsAgo)
+        .limit(1)
+        .single();
+      
+      if (recent) {
+        return { error: 'You just submitted a cash payment for this amount. Please wait a few minutes before trying again.' };
+      }
+    }
+
     const { error: dbError } = await supabase.from('payments').insert({
       tenant_id: user.id,
       amount: data.amount,
