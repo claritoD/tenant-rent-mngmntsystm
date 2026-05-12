@@ -108,8 +108,12 @@ export function PushNotificationToggle() {
         const { error } = await supabase
           .from('push_subscriptions')
           .upsert(
-            { user_id: user.id, subscription: subJson },
-            { onConflict: 'user_id' }
+            { 
+              user_id: user.id, 
+              endpoint: subJson.endpoint, 
+              subscription: subJson 
+            },
+            { onConflict: 'endpoint' }
           );
 
         if (error) throw new Error(`DB error: ${error.message}`);

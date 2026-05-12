@@ -6,14 +6,13 @@ import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { sendEmail } from '@/lib/nodemailer';
 import type { Tenant } from '@/types/database.types';
 
-
+/** Marks a tenant as inactive and unassigns them from their unit, but keeps their data for history. */
 export async function archiveTenant(tenantId: string) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
-    // 1. Mark as inactive and clear unit association
     const { error } = await supabase
       .from('tenants')
       .update({ 
@@ -26,6 +25,35 @@ export async function archiveTenant(tenantId: string) {
 
     revalidatePath('/owner/tenants');
     revalidatePath(`/owner/tenants/${tenantId}`);
+    revalidatePath('/owner/units');
+    return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}
+
+/** Permanently deletes a tenant and all their associated data (bills, payments, etc.) */
+export async function deleteTenant(tenantId: string) {
+  try {
+    const adminSupabase = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    // Verify requesting user is owner
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
+
+    // Deleting the Auth user triggers a CASCADE delete on the 'tenants' table
+    // which in turn triggers a CASCADE delete on bills, payments, etc.
+    const { error } = await adminSupabase.auth.admin.deleteUser(tenantId);
+
+    if (error) throw error;
+
+    revalidatePath('/owner/tenants');
+    revalidatePath('/owner/units');
     return { success: true };
   } catch (err: unknown) {
     return { error: (err as Error).message };

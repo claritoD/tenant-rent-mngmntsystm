@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { formatPeso, formatDate, formatDateTime } from '@/utils/format';
 import { notFound } from 'next/navigation';
 import { VaultUpload } from '@/components/owner/VaultUpload';
+import { DeleteTenantButton } from '@/components/owner/DeleteTenantButton';
 import { ArchiveTenantButton } from '@/components/owner/ArchiveTenantButton';
 import { EditTenantToggle } from '@/components/owner/EditTenantToggle';
 import { MoveOutSettlement } from '@/components/owner/MoveOutSettlement';
@@ -139,6 +140,13 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
             </tbody>
           </table>
         </div>
+      {/* Danger Zone */}
+      <div className="card" style={{ marginTop: '3rem', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.02)' }}>
+        <h2 style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '1rem', color: '#ef4444' }}>Danger Zone</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+          Permanently delete this tenant and all associated data. This action is irreversible and should only be used if you want to completely wipe their history from the system.
+        </p>
+        <DeleteTenantButton tenantId={id} name={tenant.name} />
       </div>
     </div>
   );

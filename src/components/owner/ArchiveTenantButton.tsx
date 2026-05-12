@@ -10,7 +10,7 @@ export function ArchiveTenantButton({ tenantId, name }: { tenantId: string, name
   const router = useRouter();
 
   async function handleArchive() {
-    if (!confirm(`Are you sure you want to archive ${name}? This will remove them from their unit and mark them as inactive.`)) {
+    if (!confirm(`Are you sure you want to archive ${name}? They will be removed from their unit and marked as "Inactive", but their payment history and records will be preserved.`)) {
       return;
     }
 
@@ -20,7 +20,7 @@ export function ArchiveTenantButton({ tenantId, name }: { tenantId: string, name
       alert(res.error);
     } else {
       alert('Tenant archived successfully.');
-      router.push('/owner/tenants');
+      router.refresh();
     }
     setLoading(false);
   }
@@ -30,7 +30,7 @@ export function ArchiveTenantButton({ tenantId, name }: { tenantId: string, name
       onClick={handleArchive} 
       disabled={loading} 
       className="btn btn-ghost" 
-      style={{ color: '#ef4444', gap: '0.5rem' }}
+      style={{ color: '#f59e0b', gap: '0.5rem' }}
     >
       <Archive size={18} />
       {loading ? 'Archiving...' : 'Archive Tenant'}
