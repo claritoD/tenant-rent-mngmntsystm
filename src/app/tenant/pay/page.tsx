@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Upload, Banknote, Smartphone, Check } from 'lucide-react';
 import { submitTenantPayment } from '@/app/actions/payments';
+import { compressImage } from '@/utils/image';
 
 
 export default function PayPage() {
@@ -45,10 +46,11 @@ export default function PayPage() {
     try {
       let proofUrl: string | null = null;
       if (method === 'gcash' && proofFile) {
-        const path = `${user.id}/${Date.now()}_${proofFile.name}`;
+        const compressed = await compressImage(proofFile);
+        const path = `${user.id}/${Date.now()}_${compressed.name}`;
         const { error: uploadError } = await supabase.storage
           .from('payment-proofs')
-          .upload(path, proofFile);
+          .upload(path, compressed);
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabase.storage.from('payment-proofs').getPublicUrl(path);
         proofUrl = publicUrl;

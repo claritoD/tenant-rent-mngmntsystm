@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { compressImage } from '@/utils/image';
 
 export function VaultUpload({ tenantId }: { tenantId: string }) {
   const supabase = createClient();
@@ -16,8 +17,13 @@ export function VaultUpload({ tenantId }: { tenantId: string }) {
 
     setLoading(true);
     try {
-      const path = `${tenantId}/${Date.now()}_${file.name}`;
-      const { error } = await supabase.storage.from('vault').upload(path, file);
+      let fileToUpload = file;
+      if (file.type.startsWith('image/')) {
+        fileToUpload = await compressImage(file);
+      }
+      
+      const path = `${tenantId}/${Date.now()}_${fileToUpload.name}`;
+      const { error } = await supabase.storage.from('vault').upload(path, fileToUpload);
       
       if (error) {
         alert('Upload failed: ' + error.message);

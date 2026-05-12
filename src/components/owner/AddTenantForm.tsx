@@ -7,7 +7,7 @@ import { quickStartTenant, type HistoricalPayment } from '@/app/actions/tenants'
 import type { Unit } from '@/types/database.types';
 
 interface Props {
-  units: Pick<Unit, 'id' | 'unit_name' | 'base_rent'>[];
+  units: (Pick<Unit, 'id' | 'unit_name' | 'base_rent'> & { property?: { name: string } | null })[];
   onClose?: () => void;
 }
 
@@ -237,7 +237,9 @@ export function AddTenantForm({ units, onClose }: Props) {
               value={form.unit_id} onChange={e => set('unit_id', e.target.value)}>
               <option value="">Select unit…</option>
               {units.map(u => (
-                <option key={u.id} value={u.id}>{u.unit_name} — ₱{u.base_rent.toLocaleString()}/mo</option>
+                <option key={u.id} value={u.id}>
+                  {u.property?.name ? `${u.property.name} | ` : ''}{u.unit_name} — ₱{u.base_rent.toLocaleString()}/mo
+                </option>
               ))}
             </select>
           </div>

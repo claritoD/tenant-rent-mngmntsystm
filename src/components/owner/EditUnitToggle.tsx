@@ -38,7 +38,7 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
     const newPhotos = [...formData.interior_photos];
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      const file = await compressImage(files[i]);
       const path = `unit_${unit.id}/${Date.now()}_${file.name}`;
       
       const { error } = await supabase.storage

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, X, Upload } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { compressImage } from '@/utils/image';
 
 interface Props {
   onClose?: () => void;
@@ -79,10 +80,11 @@ export function AddUnitForm({ onClose }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // 2. Upload Interior Photos
+      // 2. Compress and Upload Interior Photos
       const interiorUrls: string[] = [];
       for (const file of interiorFiles) {
-        const url = await uploadFile(file, 'interiors');
+        const compressed = await compressImage(file);
+        const url = await uploadFile(compressed, 'interiors');
         interiorUrls.push(url);
       }
 

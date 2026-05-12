@@ -15,7 +15,7 @@ export default async function TenantDashboardPage() {
   if (!user) redirect('/login');
 
   const [{ data: tenant }, { data: latestBills }, { data: recentPayments }, { data: waterRefills }, { data: announcements }] = await Promise.all([
-    supabase.from('tenants').select('*, unit:units(*)').eq('id', user.id).single(),
+    supabase.from('tenants').select('*, unit:units(*, property:properties(*))').eq('id', user.id).single(),
     supabase.from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
     supabase.from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
     supabase.from('water_refills').select('*').eq('tenant_id', user.id).order('requested_at', { ascending: false }).limit(5),
@@ -36,7 +36,11 @@ export default async function TenantDashboardPage() {
       {/* Header */}
       <div className="page-header">
         <h1>Hello, {tenant.name.split(' ')[0]} 👋</h1>
-        <p>Unit: <strong>{unit?.unit_name ?? '—'}</strong> · Next bill due: <strong>{formatDate(nextBillDate.toISOString())}</strong> (your {ordinal(tenant.anniversary_day)})</p>
+        <p>
+          Location: <strong>{(unit as any)?.property?.name ?? '—'} · Unit {unit?.unit_name ?? '—'}</strong> 
+          <span style={{ margin: '0 0.75rem', opacity: 0.3 }}>|</span>
+          Next bill: <strong>{formatDate(nextBillDate.toISOString())}</strong> (your {ordinal(tenant.anniversary_day)})
+        </p>
       </div>
 
       {/* Announcements / Bulletin Board */}
