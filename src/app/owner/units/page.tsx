@@ -61,7 +61,8 @@ export default async function UnitsPage() {
         {orphanedUnits.length > 0 && (
           <section>
             <div style={{ marginBottom: '1.25rem', borderBottom: '2px solid var(--border)', paddingBottom: '0.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>❓ Uncategorized Units</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>🏠 Individual / Stand-alone Units</h2>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Properties that are not part of a larger building group.</p>
             </div>
             <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
               {orphanedUnits.map((unit: any) => (

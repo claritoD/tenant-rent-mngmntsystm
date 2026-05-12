@@ -39,7 +39,6 @@ export function AddUnitForm({ onClose }: Props) {
       const { data } = await supabase.from('properties').select('id, name').order('name');
       if (data) {
         setProperties(data);
-        if (data.length > 0) setForm(f => ({ ...f, property_id: data[0].id }));
       }
     }
     loadProperties();
@@ -160,13 +159,13 @@ export function AddUnitForm({ onClose }: Props) {
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ ...gridTwo }}>
           <div style={{ gridColumn: '1 / -1' }}>
-            <label style={labelStyle} htmlFor="u-prop">Property / Building *</label>
-            <select id="u-prop" required style={inputStyle}
+            <label style={labelStyle} htmlFor="u-prop">Property / Building</label>
+            <select id="u-prop" style={inputStyle}
               value={form.property_id} onChange={e => set('property_id', e.target.value)}>
+              <option value="">No Building (Stand-alone Unit)</option>
               {properties.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
-              {!properties.length && <option disabled>No buildings added yet</option>}
             </select>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>

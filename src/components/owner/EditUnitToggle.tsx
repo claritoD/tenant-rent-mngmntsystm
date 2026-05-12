@@ -106,72 +106,93 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="label">Building / Property</label>
-                <select className="input" value={formData.property_id} onChange={e => setFormData({...formData, property_id: e.target.value})} required>
-                  {properties.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="input-group">
-                  <label className="label">Unit Name</label>
-                  <input className="input" value={formData.unit_name} onChange={e => setFormData({...formData, unit_name: e.target.value})} required />
+                  <label className="label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    🏢 Building / Property (Optional)
+                  </label>
+                  <select 
+                    className="input" 
+                    value={formData.property_id} 
+                    onChange={e => setFormData({...formData, property_id: e.target.value})} 
+                    style={{ background: 'var(--bg-surface)' }}
+                  >
+                    <option value="">No Building (Stand-alone Unit)</option>
+                    {properties.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
                 </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label className="label">Unit Name / #</label>
+                    <input 
+                      className="input" 
+                      value={formData.unit_name} 
+                      onChange={e => setFormData({...formData, unit_name: e.target.value})} 
+                      required 
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label className="label">Base Rent (₱)</label>
+                    <input 
+                      className="input" 
+                      type="number" 
+                      value={formData.base_rent} 
+                      onChange={e => setFormData({...formData, base_rent: parseFloat(e.target.value)})} 
+                      required 
+                    />
+                  </div>
+                </div>
+
                 <div className="input-group">
-                  <label className="label">Base Rent (₱)</label>
-                  <input className="input" type="number" value={formData.base_rent} onChange={e => setFormData({...formData, base_rent: parseFloat(e.target.value)})} required />
+                  <label className="label">Map Location URL</label>
+                  <input 
+                    className="input" 
+                    placeholder="Google Maps link..."
+                    value={formData.map_location_url} 
+                    onChange={e => setFormData({...formData, map_location_url: e.target.value})} 
+                  />
                 </div>
               </div>
-
-              <div className="input-group">
-                <label className="label">Map Location URL (Google Maps)</label>
-                <input 
-                  className="input" 
-                  placeholder="https://maps.google.com/..."
-                  value={formData.map_location_url} 
-                  onChange={e => setFormData({...formData, map_location_url: e.target.value})} 
-                />
-              </div>
-
 
               {/* Photo Section */}
-              <div style={{ background: 'var(--bg-surface)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-                <label className="label" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <ImageIcon size={18} /> Interior Photos
+              <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: '0.75rem', border: '1px solid var(--border)' }}>
+                <label className="label" style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+                  <ImageIcon size={16} /> Interior Photos
                 </label>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.75rem' }}>
                   {formData.interior_photos.map((url, i) => (
-                    <div key={i} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '0.75rem', overflow: 'hidden', border: '2px solid var(--border)' }}>
+                    <div key={i} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
                       <Image src={url} alt={`Unit photo ${i+1}`} fill style={{ objectFit: 'cover' }} />
                       <button 
                         type="button"
                         onClick={() => removePhoto(i)}
-                        style={{ position: 'absolute', top: '4px', right: '4px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                        style={{ position: 'absolute', top: '2px', right: '2px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '2px', cursor: 'pointer', display: 'flex' }}
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={12} />
                       </button>
                     </div>
                   ))}
                   
                   <label style={{ 
-                    aspectRatio: '1/1', border: '2px dashed var(--border)', borderRadius: '0.75rem',
+                    aspectRatio: '1/1', border: '2px dashed var(--border)', borderRadius: '0.5rem',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.85rem', transition: 'all 0.2s',
+                    cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.7rem', transition: 'all 0.2s',
                     background: 'rgba(255,255,255,0.02)'
                   }}>
-                    {uploading ? <Loader2 className="animate-spin" size={24} /> : <><Upload size={24} style={{ marginBottom: '0.25rem' }} /> Add Photo</>}
+                    {uploading ? <Loader2 className="animate-spin" size={18} /> : <><Upload size={18} /> Add</>}
                     <input type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} disabled={uploading} />
                   </label>
                 </div>
               </div>
 
-              <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', padding: '1rem 0', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
-                <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
-                  {loading ? 'Saving Changes...' : <><Save size={20} /> Save All Changes</>}
+              <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-card)', paddingTop: '1rem', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+                <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.75rem' }}>
+                  {loading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                 </button>
               </div>
             </form>
