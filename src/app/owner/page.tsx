@@ -162,7 +162,8 @@ export default async function OwnerOverviewPage() {
               { href: '/owner/payments', label: 'Review pending payments', color: '#f59e0b' },
               { href: '/owner/meter-readings', label: 'Enter meter readings', color: '#6366f1' },
 
-              { href: '/owner/water-refills', label: 'Manage water refills', color: '#3b82f6' },
+              {href: '/owner/water-refills', label: 'Manage water refills', color: '#3b82f6' },
+              { href: '/owner/broadcast', label: '📢 Broadcast to all tenants', color: '#ef4444' },
               { href: '/owner/tenants', label: 'Manage tenants', color: '#10b981' },
               { href: '/owner/units', label: 'Manage units & properties', color: '#8b5cf6' },
             ].map(({ href, label, color }) => (

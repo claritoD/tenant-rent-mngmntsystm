@@ -14,6 +14,7 @@ import {
   Wrench,
   Receipt,
   Calendar,
+  Megaphone,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { href: '/owner/maintenance',  label: 'Maintenance',    icon: Wrench },
   { href: '/owner/expenses',     label: 'Expenses',       icon: Receipt },
   { href: '/owner/due-date-requests', label: 'Due Date Requests', icon: Calendar },
+  { href: '/owner/broadcast',    label: 'Broadcast',      icon: Megaphone },
   { href: '/owner/settings',     label: 'Settings',       icon: Settings },
 ];
 
