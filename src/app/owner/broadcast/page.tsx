@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Megaphone, Send, History, CheckCircle2, Pin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { broadcastMessageToTenants } from '@/app/actions/notifications';

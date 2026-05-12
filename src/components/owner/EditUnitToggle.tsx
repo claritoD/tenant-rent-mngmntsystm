@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, X, Save, Image as ImageIcon, Trash2, Upload, Loader2 } from 'lucide-react';
 import { updateUnit } from '@/app/actions/units';
 import { createClient } from '@/lib/supabase/client';
@@ -20,14 +20,14 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
     property_id: unit.property_id || '',
   });
 
-  useState(() => {
+  useEffect(() => {
     async function loadProperties() {
       const supabase = createClient();
       const { data } = await supabase.from('properties').select('id, name').order('name');
       if (data) setProperties(data);
     }
     loadProperties();
-  });
+  }, []);
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;

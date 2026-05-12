@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, X, Upload } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -33,7 +33,7 @@ export function AddUnitForm({ onClose }: Props) {
   const [success, setSuccess] = useState('');
 
   // Fetch properties for selection
-  useState(() => {
+  useEffect(() => {
     async function loadProperties() {
       const { data } = await supabase.from('properties').select('id, name').order('name');
       if (data) {
@@ -42,7 +42,7 @@ export function AddUnitForm({ onClose }: Props) {
       }
     }
     loadProperties();
-  });
+  }, [supabase]);
 
   function set(key: keyof typeof DEFAULT_FORM, value: string) {
     setForm(prev => ({ ...prev, [key]: value }));
