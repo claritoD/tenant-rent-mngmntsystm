@@ -48,7 +48,7 @@ export default async function UnitsPage() {
             </div>
 
             <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
-              {prop.units.map((unit) => (
+              {prop.units.map((unit: any) => (
                 <UnitCard key={unit.id} unit={unit} />
               ))}
               {prop.units.length === 0 && (
@@ -64,7 +64,7 @@ export default async function UnitsPage() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>❓ Uncategorized Units</h2>
             </div>
             <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
-              {orphanedUnits.map((unit) => (
+              {orphanedUnits.map((unit: any) => (
                 <UnitCard key={unit.id} unit={unit} />
               ))}
             </div>
