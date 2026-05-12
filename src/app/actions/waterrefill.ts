@@ -37,3 +37,35 @@ export async function requestWaterRefill() {
     return { error: (err as Error).message };
   }
 }
+
+/** Called by the owner to manually record a refill without a request */
+export async function recordManualWaterRefill(tenantId: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized.');
+
+    // Fetch tenant's tank rate
+    const { data: tenant, error: tErr } = await supabase
+      .from('tenants')
+      .select('water_tank_rate')
+      .eq('id', tenantId)
+      .single();
+
+    if (tErr || !tenant) throw new Error('Tenant not found.');
+
+    const { error } = await supabase.from('water_refills').insert({
+      tenant_id: tenantId,
+      status: 'completed',
+      amount: tenant.water_tank_rate,
+      completed_at: new Date().toISOString(),
+    });
+
+    if (error) throw error;
+
+    revalidatePath(`/owner/tenants/${tenantId}`);
+    return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}

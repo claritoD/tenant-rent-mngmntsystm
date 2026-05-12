@@ -64,7 +64,7 @@ async function sendWebPushToOwner(title: string, body: string, url: string) {
 
     if (!subs || subs.length === 0) return;
 
-    const payload = JSON.stringify({ title, body, url });
+    const payload = JSON.stringify({ title, body, url, icon: '/icon-192.png' });
 
     for (const sub of subs) {
       try {
