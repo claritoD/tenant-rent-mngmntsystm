@@ -42,7 +42,7 @@ export default async function UnitsPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
         {unitsByProperty.map((prop) => (
           <section key={prop.id}>
-            <div style={{ marginBottom: '1.25rem', borderBottom: '2px solid var(--border)', pb: '0.5rem' }}>
+            <div style={{ marginBottom: '1.25rem', borderBottom: '2px solid var(--border)', paddingBottom: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>🏢 {prop.name}</h2>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{prop.address || 'No address set'}</p>
             </div>
@@ -60,7 +60,7 @@ export default async function UnitsPage() {
 
         {orphanedUnits.length > 0 && (
           <section>
-            <div style={{ marginBottom: '1.25rem', borderBottom: '2px solid var(--border)', pb: '0.5rem' }}>
+            <div style={{ marginBottom: '1.25rem', borderBottom: '2px solid var(--border)', paddingBottom: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>❓ Uncategorized Units</h2>
             </div>
             <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
