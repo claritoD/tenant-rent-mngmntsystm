@@ -93,8 +93,10 @@ export async function quickStartTenant(data: {
   move_in_date: string;
   has_wifi?: boolean;
   wifi_rate?: number;
-  water_mode?: 'tank' | 'metered';
+  water_mode?: 'tank' | 'metered' | 'per_head';
   water_tank_rate?: number;
+  occupants_count?: number;
+  water_per_head_rate?: number;
   security_deposit?: number;
   start_electric_reading?: number;
   start_water_reading?: number;
@@ -132,6 +134,8 @@ export async function quickStartTenant(data: {
       wifi_rate: data.wifi_rate ?? 0,
       water_mode: data.water_mode ?? 'tank',
       water_tank_rate: data.water_tank_rate ?? 0,
+      occupants_count: data.occupants_count ?? 1,
+      water_per_head_rate: data.water_per_head_rate ?? 0,
       security_deposit: data.security_deposit ?? 0,
       start_electric_reading: data.start_electric_reading ?? 0,
       start_water_reading: data.start_water_reading ?? 0,

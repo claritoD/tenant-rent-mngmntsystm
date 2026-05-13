@@ -45,6 +45,8 @@ export async function POST(request: Request) {
       wifi_rate = 0,
       water_mode = 'tank',
       water_tank_rate = 0,
+      occupants_count = 1,
+      water_per_head_rate = 0,
       security_deposit = 0,
       is_existing = false,
       arrears = 0,
@@ -87,6 +89,8 @@ export async function POST(request: Request) {
       wifi_rate: Number(wifi_rate),
       water_mode,
       water_tank_rate: Number(water_tank_rate),
+      occupants_count: Number(occupants_count),
+      water_per_head_rate: Number(water_per_head_rate),
       security_deposit: Number(security_deposit),
       // For existing tenants carry over their financial state
       arrears: is_existing ? Number(arrears) : 0,

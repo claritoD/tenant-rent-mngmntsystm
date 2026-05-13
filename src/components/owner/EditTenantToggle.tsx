@@ -21,6 +21,8 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
     credit_balance: tenant.credit_balance,
     start_electric_reading: tenant.start_electric_reading || 0,
     start_water_reading: tenant.start_water_reading || 0,
+    occupants_count: tenant.occupants_count || 1,
+    water_per_head_rate: tenant.water_per_head_rate || 0,
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -137,11 +139,27 @@ export function EditTenantToggle({ tenant, units }: { tenant: Tenant, units: Uni
                     <input type="radio" name="water_mode" checked={formData.water_mode === 'tank'} onChange={() => setFormData({...formData, water_mode: 'tank'})} style={{ accentColor: '#6366f1' }} />
                     Water Tank
                   </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    <input type="radio" name="water_mode" checked={formData.water_mode === 'per_head'} onChange={() => setFormData({...formData, water_mode: 'per_head'})} style={{ accentColor: '#6366f1' }} />
+                    Per Head
+                  </label>
                 </div>
                 {formData.water_mode === 'tank' && (
                   <div className="input-group">
                     <label className="label">Price per Refill (₱)</label>
                     <input className="input" type="number" value={formData.water_tank_rate} onChange={e => setFormData({...formData, water_tank_rate: parseFloat(e.target.value)})} />
+                  </div>
+                )}
+                {formData.water_mode === 'per_head' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="input-group">
+                      <label className="label">No. of Occupants</label>
+                      <input className="input" type="number" value={formData.occupants_count} onChange={e => setFormData({...formData, occupants_count: parseInt(e.target.value)})} />
+                    </div>
+                    <div className="input-group">
+                      <label className="label">Rate per Person (₱)</label>
+                      <input className="input" type="number" value={formData.water_per_head_rate} onChange={e => setFormData({...formData, water_per_head_rate: parseFloat(e.target.value)})} />
+                    </div>
                   </div>
                 )}
               </div>

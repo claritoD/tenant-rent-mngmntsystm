@@ -92,7 +92,7 @@ export function MoveOutSettlement({ tenant }: { tenant: Tenant }) {
             </div>
             <div className="input-group">
               <label>Final Water Reading</label>
-              <input type="number" step="0.01" name="finalWaterReading" className="input" placeholder="Leave 0 if tank mode" />
+              <input type="number" step="0.01" name="finalWaterReading" className="input" placeholder="Leave 0 if tank/per-head mode" />
             </div>
           </div>
 

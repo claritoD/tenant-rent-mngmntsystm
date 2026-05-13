@@ -150,7 +150,9 @@ export default async function TenantDashboardPage() {
           <div className="card-sm">
             <p className="section-title">Water Mode</p>
             <p className="text-lg font-semibold text-primary" style={{ textTransform: 'capitalize' }}>
-              {tenant.water_mode} {tenant.water_mode === 'tank' && <span className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 400 }}>({formatPeso(tenant.water_tank_rate)}/refill)</span>}
+              {tenant.water_mode.replace('_', ' ')} 
+              {tenant.water_mode === 'tank' && <span className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 400 }}> ({formatPeso(tenant.water_tank_rate)}/refill)</span>}
+              {tenant.water_mode === 'per_head' && <span className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 400 }}> ({tenant.occupants_count} heads × {formatPeso(tenant.water_per_head_rate)})</span>}
             </p>
           </div>
         </div>

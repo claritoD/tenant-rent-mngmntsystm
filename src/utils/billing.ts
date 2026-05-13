@@ -96,6 +96,8 @@ export function computeBill(
     water = calcUtilityAmount(waterReading);
   } else if (tenant.water_mode === 'tank') {
     water = waterRefills.reduce((sum, r) => sum + (r.amount || 0), 0);
+  } else if (tenant.water_mode === 'per_head') {
+    water = (tenant.occupants_count || 1) * (tenant.water_per_head_rate || 0);
   }
 
   const arrearsCarried = tenant.arrears;

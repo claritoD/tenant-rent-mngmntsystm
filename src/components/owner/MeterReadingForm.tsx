@@ -114,7 +114,7 @@ export default function MeterReadingForm({ tenants }: Props) {
   const total = consumption * parseFloat(ratePerUnit || '0');
 
   const selectedTenant = tenants.find(t => t.id === tenantId);
-  const isWaterTank = type === 'water' && selectedTenant?.water_mode === 'tank';
+  const isNonMeteredWater = type === 'water' && (selectedTenant?.water_mode === 'tank' || selectedTenant?.water_mode === 'per_head');
 
   return (
     <div className="card" style={{ maxWidth: '560px' }}>
@@ -157,9 +157,9 @@ export default function MeterReadingForm({ tenants }: Props) {
         </div>
 
         {/* Readings - Hide if Water Tank */}
-        {isWaterTank ? (
+        {isNonMeteredWater ? (
           <div style={{ padding: '1rem', background: 'rgba(59,130,246,0.1)', border: '1px dashed rgba(59,130,246,0.3)', borderRadius: '0.5rem', color: '#3b82f6', fontSize: '0.875rem', textAlign: 'center' }}>
-            💧 This tenant is on <strong>Tank Mode</strong>. Their water billing is handled per-refill on the Water Refills dashboard, not via meter readings.
+            💧 This tenant is on <strong>{selectedTenant?.water_mode === 'tank' ? 'Tank Mode' : 'Per Head Mode'}</strong>. Their water billing is handled {selectedTenant?.water_mode === 'tank' ? 'per-refill' : 'per-occupant'}, not via meter readings.
           </div>
         ) : (
           <>

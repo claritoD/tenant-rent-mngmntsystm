@@ -19,8 +19,10 @@ export function QuickStartWizard({ units }: { units: Unit[] }) {
     move_in_date: new Date().toISOString().split('T')[0],
     has_wifi: false,
     wifi_rate: 0,
-    water_mode: 'tank' as 'tank' | 'metered',
+    water_mode: 'tank' as 'tank' | 'metered' | 'per_head',
     water_tank_rate: 0,
+    occupants_count: 1,
+    water_per_head_rate: 0,
     security_deposit: 0,
     start_electric_reading: 0,
     start_water_reading: 0,
@@ -136,11 +138,24 @@ export function QuickStartWizard({ units }: { units: Unit[] }) {
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                 <button type="button" onClick={() => setFormData({ ...formData, water_mode: 'tank' })} style={{ flex: 1, padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid', borderColor: formData.water_mode === 'tank' ? '#6366f1' : 'var(--border)', background: formData.water_mode === 'tank' ? 'rgba(99,102,241,0.1)' : 'transparent', color: formData.water_mode === 'tank' ? '#6366f1' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}>Water Tank</button>
                 <button type="button" onClick={() => setFormData({ ...formData, water_mode: 'metered' })} style={{ flex: 1, padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid', borderColor: formData.water_mode === 'metered' ? '#6366f1' : 'var(--border)', background: formData.water_mode === 'metered' ? 'rgba(99,102,241,0.1)' : 'transparent', color: formData.water_mode === 'metered' ? '#6366f1' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}>Metered</button>
+                <button type="button" onClick={() => setFormData({ ...formData, water_mode: 'per_head' })} style={{ flex: 1, padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid', borderColor: formData.water_mode === 'per_head' ? '#6366f1' : 'var(--border)', background: formData.water_mode === 'per_head' ? 'rgba(99,102,241,0.1)' : 'transparent', color: formData.water_mode === 'per_head' ? '#6366f1' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}>Per Head</button>
               </div>
               {formData.water_mode === 'tank' && (
                 <div className="input-group">
                   <label className="label">Price per Refill (₱)</label>
                   <input className="input" type="number" value={formData.water_tank_rate || ''} onChange={e => setFormData({ ...formData, water_tank_rate: parseFloat(e.target.value) })} placeholder="e.g. 100" />
+                </div>
+              )}
+              {formData.water_mode === 'per_head' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label className="label">Occupants</label>
+                    <input className="input" type="number" value={formData.occupants_count || ''} onChange={e => setFormData({ ...formData, occupants_count: parseInt(e.target.value) })} placeholder="1" />
+                  </div>
+                  <div className="input-group">
+                    <label className="label">Rate/Head (₱)</label>
+                    <input className="input" type="number" value={formData.water_per_head_rate || ''} onChange={e => setFormData({ ...formData, water_per_head_rate: parseFloat(e.target.value) })} placeholder="150" />
+                  </div>
                 </div>
               )}
             </div>

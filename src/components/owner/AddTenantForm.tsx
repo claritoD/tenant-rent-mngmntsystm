@@ -21,8 +21,10 @@ const DEFAULT_FORM = {
   move_in_date: new Date().toISOString().split('T')[0],
   has_wifi: false,
   wifi_rate: '',
-  water_mode: 'tank' as 'tank' | 'metered',
+  water_mode: 'tank' as 'tank' | 'metered' | 'per_head',
   water_tank_rate: '',
+  occupants_count: '1',
+  water_per_head_rate: '',
   security_deposit: '',
   arrears: '',
   credit_balance: '',
@@ -83,6 +85,8 @@ export function AddTenantForm({ units, onClose }: Props) {
           wifi_rate: parseFloat(form.wifi_rate || '0'),
           water_mode: form.water_mode,
           water_tank_rate: parseFloat(form.water_tank_rate || '0'),
+          occupants_count: parseInt(form.occupants_count || '1'),
+          water_per_head_rate: parseFloat(form.water_per_head_rate || '0'),
           security_deposit: parseFloat(form.security_deposit || '0'),
           start_electric_reading: parseFloat(form.start_electric_reading || '0'),
           start_water_reading: parseFloat(form.start_water_reading || '0'),
@@ -111,6 +115,8 @@ export function AddTenantForm({ units, onClose }: Props) {
             wifi_rate: parseFloat(form.wifi_rate || '0'),
             water_mode: form.water_mode,
             water_tank_rate: parseFloat(form.water_tank_rate || '0'),
+            occupants_count: parseInt(form.occupants_count || '1'),
+            water_per_head_rate: parseFloat(form.water_per_head_rate || '0'),
             security_deposit: parseFloat(form.security_deposit || '0'),
             is_existing: mode === 'existing',
             arrears: parseFloat(form.arrears || '0'),
@@ -273,7 +279,7 @@ export function AddTenantForm({ units, onClose }: Props) {
             <div>
               <label style={labelStyle}>Water Billing Mode</label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {(['tank', 'metered'] as const).map(m => (
+                {(['tank', 'metered', 'per_head'] as const).map(m => (
                   <button key={m} type="button" id={`water-${m}`}
                     onClick={() => set('water_mode', m)}
                     style={{
@@ -282,7 +288,7 @@ export function AddTenantForm({ units, onClose }: Props) {
                       background: form.water_mode === m ? 'rgba(99,102,241,0.12)' : 'transparent',
                       color: form.water_mode === m ? '#6366f1' : 'var(--text-secondary)',
                     }}>
-                    {m === 'tank' ? '🪣 Tank' : '💧 Metered'}
+                    {m === 'tank' ? '🪣 Tank' : m === 'metered' ? '💧 Metered' : '👤 Per Head'}
                   </button>
                 ))}
               </div>
@@ -295,6 +301,22 @@ export function AddTenantForm({ units, onClose }: Props) {
                   value={form.water_tank_rate} onChange={e => set('water_tank_rate', e.target.value)}
                   placeholder="e.g. 100" />
               </div>
+            )}
+            {form.water_mode === 'per_head' && (
+              <>
+                <div>
+                  <label style={labelStyle} htmlFor="t-heads">No. of Occupants</label>
+                  <input id="t-heads" type="number" min="1" style={inputStyle}
+                    value={form.occupants_count} onChange={e => set('occupants_count', e.target.value)}
+                    placeholder="1" />
+                </div>
+                <div>
+                  <label style={labelStyle} htmlFor="t-headrate">Rate per Person (₱)</label>
+                  <input id="t-headrate" type="number" step="0.01" min="0" style={inputStyle}
+                    value={form.water_per_head_rate} onChange={e => set('water_per_head_rate', e.target.value)}
+                    placeholder="e.g. 150" />
+                </div>
+              </>
             )}
           </div>
           {/* WiFi toggle */}

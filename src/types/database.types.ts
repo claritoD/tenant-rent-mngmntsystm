@@ -1,7 +1,7 @@
 // Auto-generated types matching latest schema
 // Updated manually to reflect wifi_rate move to Tenant and starting meter columns
 
-export type WaterBillingMode = 'metered' | 'tank';
+export type WaterBillingMode = 'metered' | 'tank' | 'per_head';
 export type UtilityType = 'electric' | 'water';
 export type PaymentStatus = 'pending' | 'verified' | 'rejected';
 export type WaterRefillStatus = 'pending' | 'completed' | 'cancelled';
@@ -47,6 +47,8 @@ export interface Tenant {
   arrears: number;
   water_mode: WaterBillingMode;
   water_tank_rate: number;
+  occupants_count: number;
+  water_per_head_rate: number;
   start_electric_reading: number;
   start_water_reading: number;
   is_active: boolean;
