@@ -14,15 +14,20 @@ export default async function TenantDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const [{ data: tenant }, { data: latestBills }, { data: recentPayments }, { data: waterRefills }, { data: announcements }] = await Promise.all([
-    supabase.from('tenants').select('*, unit:units(*, property:properties(*))').eq('id', user.id).single(),
+  const { data: tenant } = await supabase.from('tenants').select('*, unit:units(*, property:properties(*))').eq('id', user.id).single();
+  if (!tenant) return <p>Tenant record not found. Contact your landlord.</p>;
+
+  const [{ data: latestBills }, { data: recentPayments }, { data: waterRefills }, { data: announcements }] = await Promise.all([
     supabase.from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
     supabase.from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
     supabase.from('water_refills').select('*').eq('tenant_id', user.id).order('requested_at', { ascending: false }).limit(5),
-    supabase.from('announcements').select('*').order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(5),
+    supabase.from('announcements')
+      .select('*')
+      .or(`property_id.is.null${tenant.unit?.property_id ? `,property_id.eq.${tenant.unit.property_id}` : ''}`)
+      .order('is_pinned', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(5),
   ]);
-
-  if (!tenant) return <p>Tenant record not found. Contact your landlord.</p>;
 
   const unit = tenant.unit;
   if (!unit) return <p>Your account is not assigned to a unit. Contact your landlord.</p>;
@@ -30,6 +35,9 @@ export default async function TenantDashboardPage() {
   const nextBillDate = nextAnniversaryDate(tenant.move_in_date);
   const currentBill = latestBills?.[0];
   const pendingRefill = waterRefills?.find(r => r.status === 'pending');
+
+  const globalAnnouncements = (announcements ?? []).filter(a => !a.property_id);
+  const buildingAnnouncements = (announcements ?? []).filter(a => a.property_id);
 
   return (
     <div className="animate-enter">
@@ -43,15 +51,44 @@ export default async function TenantDashboardPage() {
         </p>
       </div>
 
-      {/* Announcements / Bulletin Board */}
-      {announcements && announcements.length > 0 && (
+      {/* Building Announcements (Specific to their building) */}
+      {buildingAnnouncements.length > 0 && (
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bulletin Board</h2>
-            <div style={{ height: '2px', flex: 1, background: 'var(--border)', opacity: 0.5 }} />
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Building Updates ({(unit as any)?.property?.name})</h2>
+            <div style={{ height: '2px', flex: 1, background: '#bae6fd', opacity: 0.5 }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {announcements.map(ann => (
+            {buildingAnnouncements.map(ann => (
+              <div key={ann.id} className="card" style={{ 
+                padding: '1rem 1.25rem', 
+                borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #0284c7', 
+                background: ann.is_pinned ? 'rgba(245,158,11,0.03)' : 'rgba(2,132,199,0.02)',
+                boxShadow: ann.is_pinned ? '0 4px 12px rgba(245,158,11,0.1)' : 'none'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {ann.is_pinned && <Pin size={14} style={{ color: '#f59e0b', transform: 'rotate(45deg)' }} />}
+                    <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
+                </div>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.content}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Universal Announcements (Global) */}
+      {globalAnnouncements.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Universal Board</h2>
+            <div style={{ height: '2px', flex: 1, background: '#c7d2fe', opacity: 0.5 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {globalAnnouncements.map(ann => (
               <div key={ann.id} className="card" style={{ 
                 padding: '1rem 1.25rem', 
                 borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #6366f1', 
