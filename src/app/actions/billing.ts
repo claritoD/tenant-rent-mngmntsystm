@@ -45,12 +45,12 @@ export async function generateBill(tenantId: string) {
       .eq('tenant_id', tenantId)
       .gte('reading_date', latestDate.toISOString());
 
-    const electricReading = readings?.find(r => r.type === 'electric') || null;
-    const waterReading = tenant.water_mode === 'metered' ? (readings?.find(r => r.type === 'water') || null) : null;
+    const electricReading = (readings as MeterReading[] | null)?.find(r => r.type === 'electric') || null;
+    const waterReading = (tenant as unknown as Tenant).water_mode === 'metered' ? ((readings as MeterReading[] | null)?.find(r => r.type === 'water') || null) : null;
 
     // 3. Fetch Unbilled Water Refills
     let waterRefills: WaterRefill[] = [];
-    if (tenant.water_mode === 'tank') {
+    if ((tenant as unknown as Tenant).water_mode === 'tank') {
       const { data } = await supabase
         .from('water_refills')
         .select('*')
@@ -67,7 +67,7 @@ export async function generateBill(tenantId: string) {
     // or just run sequentially since owner has full access.
     
     // Create bill
-    const { data: newBill, error: billErr } = await supabase.from('bills').insert({
+    const { data: newBill, error: billErr } = await (supabase.from('bills') as any).insert({
       tenant_id: tenantId,
       bill_date: billDate.toISOString().split('T')[0],
       period_label: pLabel,
@@ -84,15 +84,15 @@ export async function generateBill(tenantId: string) {
     if (billErr) throw new Error(billErr.message);
 
     // Update tenant balances
-    const { error: tUpdateErr } = await supabase.from('tenants').update({
+    const { error: tUpdateErr } = await (supabase.from('tenants') as any).update({
       arrears: breakdown.totalDue, // Old arrears are now rolled into the new total_due
-      credit_balance: Math.max(0, tenant.credit_balance - breakdown.creditApplied),
+      credit_balance: Math.max(0, (tenant as unknown as Tenant).credit_balance - breakdown.creditApplied),
     }).eq('id', tenantId);
     if (tUpdateErr) throw new Error(tUpdateErr.message);
 
     // Update water refills to billed
     if (waterRefills.length > 0) {
-      const { error: wrErr } = await supabase.from('water_refills')
+      const { error: wrErr } = await (supabase.from('water_refills') as any)
         .update({ billed: true })
         .in('id', waterRefills.map(r => r.id));
       if (wrErr) throw new Error(wrErr.message);
@@ -113,7 +113,7 @@ export async function generateBill(tenantId: string) {
           to: email,
           subject: `Your RentsEasy Bill for ${pLabel} is Ready`,
           html: `
-            <h2>Hello ${tenant.name},</h2>
+            <h2>Hello ${(tenant as unknown as Tenant).name},</h2>
             <p>Your hybrid utility bill for <strong>${pLabel}</strong> has been generated.</p>
             <h3>Total Due: ₱${breakdown.totalDue.toFixed(2)}</h3>
             <p>Please log in to your tenant dashboard to view the full breakdown and submit your GCash payment reference.</p>

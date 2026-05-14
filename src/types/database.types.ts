@@ -146,6 +146,26 @@ export interface OwnerDashboardSettings {
   updated_at: string;
 }
 
+export interface MaintenanceTicket {
+  id: string;
+  tenant_id: string;
+  description: string;
+  status: 'pending' | 'open' | 'resolved' | 'cancelled';
+  photo_url: string | null;
+  created_at: string;
+  // joined
+  tenant?: Tenant;
+}
+
+export interface Expense {
+  id: string;
+  amount: number;
+  description: string;
+  category: 'Repair' | 'Tax' | 'Utility' | 'Supplies' | 'Other';
+  date: string;
+  created_at: string;
+}
+
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
 export type Database = {
@@ -153,53 +173,63 @@ export type Database = {
     Tables: {
       units: {
         Row: Unit;
-        Insert: Unit;
+        Insert: Partial<Unit>;
         Update: Partial<Unit>;
       };
       tenants: {
-        Row: Tenant;
-        Insert: Tenant;
-        Update: Partial<Tenant>;
+        Row: Omit<Tenant, 'unit'>;
+        Insert: Partial<Omit<Tenant, 'unit'>>;
+        Update: Partial<Omit<Tenant, 'unit'>>;
       };
       meter_readings: {
         Row: MeterReading;
-        Insert: MeterReading;
+        Insert: Partial<MeterReading>;
         Update: Partial<MeterReading>;
       };
       due_date_change_requests: {
-        Row: DueDateChangeRequest;
-        Insert: DueDateChangeRequest;
-        Update: Partial<DueDateChangeRequest>;
+        Row: Omit<DueDateChangeRequest, 'tenant'>;
+        Insert: Partial<Omit<DueDateChangeRequest, 'tenant'>>;
+        Update: Partial<Omit<DueDateChangeRequest, 'tenant'>>;
       };
       bills: {
-        Row: Bill;
-        Insert: Bill;
-        Update: Partial<Bill>;
+        Row: Omit<Bill, 'tenant'>;
+        Insert: Partial<Omit<Bill, 'tenant'>>;
+        Update: Partial<Omit<Bill, 'tenant'>>;
       };
       payments: {
-        Row: Payment;
-        Insert: Payment;
-        Update: Partial<Payment>;
+        Row: Omit<Payment, 'bill'>;
+        Insert: Partial<Omit<Payment, 'bill'>>;
+        Update: Partial<Omit<Payment, 'bill'>>;
       };
       water_refills: {
-        Row: WaterRefill;
-        Insert: WaterRefill;
-        Update: Partial<WaterRefill>;
+        Row: Omit<WaterRefill, 'tenant'>;
+        Insert: Partial<Omit<WaterRefill, 'tenant'>>;
+        Update: Partial<Omit<WaterRefill, 'tenant'>>;
       };
       owner_dashboard_settings: {
         Row: OwnerDashboardSettings;
-        Insert: OwnerDashboardSettings;
+        Insert: Partial<OwnerDashboardSettings>;
         Update: Partial<OwnerDashboardSettings>;
       };
       properties: {
         Row: Property;
-        Insert: Property;
+        Insert: Partial<Property>;
         Update: Partial<Property>;
       };
       announcements: {
         Row: Announcement;
-        Insert: Announcement;
+        Insert: Partial<Announcement>;
         Update: Partial<Announcement>;
+      };
+      maintenance_tickets: {
+        Row: Omit<MaintenanceTicket, 'tenant'>;
+        Insert: Partial<Omit<MaintenanceTicket, 'tenant'>>;
+        Update: Partial<Omit<MaintenanceTicket, 'tenant'>>;
+      };
+      expenses: {
+        Row: Expense;
+        Insert: Partial<Expense>;
+        Update: Partial<Expense>;
       };
     };
     Views: { [key: string]: { Row: never; Insert: never; Update: never } };

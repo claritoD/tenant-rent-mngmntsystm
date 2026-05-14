@@ -7,6 +7,7 @@ import { EditUnitToggle } from '@/components/owner/EditUnitToggle';
 import { DeleteUnitButton } from '@/components/owner/DeleteUnitButton';
 import { PropertyManager } from '@/components/owner/PropertyManager';
 import type { Metadata } from 'next';
+import type { Unit, Property } from '@/types/database.types';
 
 export const metadata: Metadata = { title: 'Units' };
 

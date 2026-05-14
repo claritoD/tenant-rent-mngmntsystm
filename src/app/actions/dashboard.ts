@@ -12,8 +12,8 @@ export async function getOrCreateDashboardSettings() {
     if (!user || user.user_metadata?.role !== 'owner') return { error: 'Unauthorized.' };
 
     // Try to get existing settings
-    let { data: settings, error: getErr } = await supabase
-      .from('owner_dashboard_settings')
+    let { data: settings, error: getErr } = await (supabase
+      .from('owner_dashboard_settings') as any)
       .select('*')
       .eq('owner_id', user.id)
       .single();
@@ -33,8 +33,8 @@ export async function getOrCreateDashboardSettings() {
         show_due_date_pending: true,
       };
 
-      const { data: created, error: createErr } = await supabase
-        .from('owner_dashboard_settings')
+      const { data: created, error: createErr } = await (supabase
+        .from('owner_dashboard_settings') as any)
         .insert([defaultSettings])
         .select()
         .single();
@@ -57,8 +57,8 @@ export async function updateDashboardSettings(updates: Partial<OwnerDashboardSet
     
     if (!user || user.user_metadata?.role !== 'owner') return { error: 'Unauthorized.' };
 
-    const { data: settings, error: updateErr } = await supabase
-      .from('owner_dashboard_settings')
+    const { data: settings, error: updateErr } = await (supabase
+      .from('owner_dashboard_settings') as any)
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -94,22 +94,22 @@ export async function getDashboardAnalytics() {
       { data: maintenanceData },
       { data: expensesData },
     ] = await Promise.all([
-      supabase.from('units').select('id'),
-      supabase.from('tenants').select('id, is_active, unit_id, arrears, credit_balance'),
-      supabase.from('bills').select('id, total_due, is_paid, rent_amount, electric_amount, water_amount, created_at'),
-      supabase.from('payments').select('amount, status, verified_at, date_submitted'),
-      supabase.from('water_refills').select('status, requested_at'),
-      supabase.from('due_date_change_requests').select('status, requested_at'),
-      supabase.from('maintenance').select('id, status') as any, // May not exist yet
-      supabase.from('expenses').select('id, amount, created_at') as any, // May not exist yet
+      (supabase.from('units') as any).select('id'),
+      (supabase.from('tenants') as any).select('id, is_active, unit_id, arrears, credit_balance'),
+      (supabase.from('bills') as any).select('id, total_due, is_paid, rent_amount, electric_amount, water_amount, created_at'),
+      (supabase.from('payments') as any).select('amount, status, verified_at, date_submitted'),
+      (supabase.from('water_refills') as any).select('status, requested_at'),
+      (supabase.from('due_date_change_requests') as any).select('status, requested_at'),
+      (supabase.from('maintenance_tickets') as any).select('id, status'),
+      (supabase.from('expenses') as any).select('id, amount, created_at'),
     ]);
 
-    const units = unitsData || [];
-    const tenants = tenantsData || [];
-    const bills = billsData || [];
-    const payments = paymentsData || [];
-    const waterRefills = waterRefillsData || [];
-    const dueDateRequests = dueDateRequestsData || [];
+    const units = (unitsData || []) as { id: string }[];
+    const tenants = (tenantsData || []) as { id: string, is_active: boolean, unit_id: string, arrears: number, credit_balance: number }[];
+    const bills = (billsData || []) as { id: string, total_due: number, is_paid: boolean, rent_amount: number, electric_amount: number, water_amount: number, created_at: string }[];
+    const payments = (paymentsData || []) as { amount: number, status: string, verified_at: string | null, date_submitted: string }[];
+    const waterRefills = (waterRefillsData || []) as { status: string, requested_at: string }[];
+    const dueDateRequests = (dueDateRequestsData || []) as { status: string, requested_at: string }[];
 
     // Calculate unit occupancy
     const totalUnits = units.length;

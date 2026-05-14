@@ -21,7 +21,7 @@ export async function addExpense(formData: FormData) {
     const { error } = await supabase.from('expenses').insert({
       amount,
       description,
-      category,
+      category: category as 'Repair' | 'Tax' | 'Utility' | 'Supplies' | 'Other',
       date
     });
 
