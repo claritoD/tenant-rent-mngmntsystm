@@ -28,6 +28,7 @@ export default async function TenantDashboardPage() {
       .select('*')
       .or(`property_id.is.null${tenant.unit?.property_id ? `,property_id.eq.${tenant.unit.property_id}` : ''}`)
       .or('expires_at.is.null,expires_at.gt.now()')
+      .gt('created_at', tenant.last_read_announcements_at ?? '2000-01-01')
       .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(5),
@@ -56,84 +57,99 @@ export default async function TenantDashboardPage() {
         </p>
       </div>
 
-      {/* Building Announcements (Specific to their building) */}
-      {buildingAnnouncements.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Building Updates ({unit?.property?.name})</h2>
-            <div style={{ height: '2px', flex: 1, background: '#bae6fd', opacity: 0.5 }} />
-            <Link href="/tenant/broadcasts" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0369a1', textDecoration: 'none' }}>View All →</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {buildingAnnouncements.map(ann => (
-              <div key={ann.id} className="card" style={{ 
-                padding: '1rem 1.25rem', 
-                borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #0284c7', 
-                background: ann.is_pinned ? 'rgba(245,158,11,0.03)' : 'rgba(2,132,199,0.02)',
-                boxShadow: ann.is_pinned ? '0 4px 12px rgba(245,158,11,0.1)' : 'none'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {ann.is_pinned && <Pin size={14} style={{ color: '#f59e0b', transform: 'rotate(45deg)' }} />}
-                    <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
-                </div>
-                <div className="markdown-body" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {ann.content}
-                  </ReactMarkdown>
-                </div>
-                {ann.image_url && (
-                  <div style={{ marginTop: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
-                  </div>
-                )}
-              </div>
-            ))}
+      {/* New Announcements - only shown when unread ones exist */}
+      {buildingAnnouncements.length === 0 && globalAnnouncements.length === 0 ? (
+        <div style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: '1.25rem' }}>✅</span>
+          <div>
+            <p style={{ fontWeight: 600, fontSize: '0.9rem', color: '#10b981', margin: 0 }}>You&apos;re all caught up!</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>No new announcements. <a href="/tenant/broadcasts" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>View bulletin board →</a></p>
           </div>
         </div>
-      )}
+      ) : (
+        <>
+          {/* Building Announcements (Specific to their building) */}
+          {buildingAnnouncements.length > 0 && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Building Updates ({unit?.property?.name})</h2>
+                <div style={{ height: '2px', flex: 1, background: '#bae6fd', opacity: 0.5 }} />
+                <Link href="/tenant/broadcasts" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0369a1', textDecoration: 'none' }}>View All →</Link>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {buildingAnnouncements.map(ann => (
+                  <div key={ann.id} className="card" style={{ 
+                    padding: '1rem 1.25rem', 
+                    borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #0284c7', 
+                    background: ann.is_pinned ? 'rgba(245,158,11,0.03)' : 'rgba(2,132,199,0.02)',
+                    boxShadow: ann.is_pinned ? '0 4px 12px rgba(245,158,11,0.1)' : 'none'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {ann.is_pinned && <Pin size={14} style={{ color: '#f59e0b', transform: 'rotate(45deg)' }} />}
+                        <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 800, padding: '0.1rem 0.4rem', background: 'rgba(99,102,241,0.15)', color: '#6366f1', borderRadius: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>NEW</span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
+                    </div>
+                    <div className="markdown-body" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {ann.content}
+                      </ReactMarkdown>
+                    </div>
+                    {ann.image_url && (
+                      <div style={{ marginTop: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-      {/* Universal Announcements (Global) */}
-      {globalAnnouncements.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Universal Board</h2>
-            <div style={{ height: '2px', flex: 1, background: '#c7d2fe', opacity: 0.5 }} />
-            <Link href="/tenant/broadcasts" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4f46e5', textDecoration: 'none' }}>View All →</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {globalAnnouncements.map(ann => (
-              <div key={ann.id} className="card" style={{ 
-                padding: '1rem 1.25rem', 
-                borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #6366f1', 
-                background: ann.is_pinned ? 'rgba(245,158,11,0.03)' : 'rgba(99,102,241,0.02)',
-                boxShadow: ann.is_pinned ? '0 4px 12px rgba(245,158,11,0.1)' : 'none'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {ann.is_pinned && <Pin size={14} style={{ color: '#f59e0b', transform: 'rotate(45deg)' }} />}
-                    <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
-                </div>
-                <div className="markdown-body" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {ann.content}
-                  </ReactMarkdown>
-                </div>
-                {ann.image_url && (
-                  <div style={{ marginTop: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
-                  </div>
-                )}
+          {/* Universal Announcements (Global) */}
+          {globalAnnouncements.length > 0 && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Universal Board</h2>
+                <div style={{ height: '2px', flex: 1, background: '#c7d2fe', opacity: 0.5 }} />
+                <Link href="/tenant/broadcasts" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4f46e5', textDecoration: 'none' }}>View All →</Link>
               </div>
-            ))}
-          </div>
-        </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {globalAnnouncements.map(ann => (
+                  <div key={ann.id} className="card" style={{ 
+                    padding: '1rem 1.25rem', 
+                    borderLeft: ann.is_pinned ? '4px solid #f59e0b' : '4px solid #6366f1', 
+                    background: ann.is_pinned ? 'rgba(245,158,11,0.03)' : 'rgba(99,102,241,0.02)',
+                    boxShadow: ann.is_pinned ? '0 4px 12px rgba(245,158,11,0.1)' : 'none'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {ann.is_pinned && <Pin size={14} style={{ color: '#f59e0b', transform: 'rotate(45deg)' }} />}
+                        <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{ann.title}</h3>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 800, padding: '0.1rem 0.4rem', background: 'rgba(99,102,241,0.15)', color: '#6366f1', borderRadius: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>NEW</span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
+                    </div>
+                    <div className="markdown-body" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {ann.content}
+                      </ReactMarkdown>
+                    </div>
+                    {ann.image_url && (
+                      <div style={{ marginTop: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Current Bill Spotlight */}

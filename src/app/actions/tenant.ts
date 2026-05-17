@@ -15,7 +15,8 @@ export async function markAnnouncementsAsRead() {
       .eq('id', user.id);
 
     if (error) throw error;
-    revalidatePath('/tenant');
+    // Revalidate all tenant pages so the badge in TenantNav updates immediately
+    revalidatePath('/tenant', 'layout');
     return { success: true };
   } catch (err) {
     console.error('Failed to mark announcements as read:', err);
