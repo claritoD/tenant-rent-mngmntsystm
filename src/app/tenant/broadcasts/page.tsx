@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { formatDate } from '@/utils/format';
 import { Pin, Megaphone, Info } from 'lucide-react';
-import { markAnnouncementsAsRead } from '@/app/actions/tenant';
+import MarkAsRead from '@/components/tenant/MarkAsRead';
 import type { Announcement } from '@/types/database.types';
 import type { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
@@ -11,8 +11,6 @@ import remarkGfm from 'remark-gfm';
 export const metadata: Metadata = { title: 'Bulletin Board' };
 
 export default async function BulletinBoardPage() {
-  // Mark as read immediately on load
-  await markAnnouncementsAsRead();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -33,6 +31,8 @@ export default async function BulletinBoardPage() {
 
   return (
     <div className="animate-enter">
+      {/* Invisible client component: marks as read AND calls router.refresh() to bust client cache */}
+      <MarkAsRead />
       <div className="page-header">
         <h1>Bulletin Board</h1>
         <p>Stay updated with the latest news and building announcements.</p>

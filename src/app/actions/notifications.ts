@@ -97,7 +97,10 @@ export async function broadcastMessageToTenants(title: string, message: string, 
 
     const { data: tenants } = await query;
 
-    if (!tenants || tenants.length === 0) return;
+    if (!tenants || tenants.length === 0) {
+      console.warn('[Broadcast] No active tenants found for this announcement.');
+      return { success: true };
+    }
     const tenantIds = tenants.map(t => t.id);
 
     // 3. Fetch all push subscriptions for these tenants
@@ -122,31 +125,44 @@ export async function broadcastMessageToTenants(title: string, message: string, 
     }
 
     // 5. Send Emails (Fetch emails from Auth)
-    const { data: authUsers } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 });
-    const activeTenantEmails = authUsers.users
-      .filter(u => tenantIds.includes(u.id))
-      .map(u => u.email)
-      .filter(Boolean) as string[];
+    const { data: authUsers, error: authErr } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 });
+    if (authErr) {
+      console.error('[Broadcast] Failed to list auth users for email:', authErr);
+    } else if (authUsers?.users) {
+      const activeTenantEmails = authUsers.users
+        .filter(u => tenantIds.includes(u.id))
+        .map(u => u.email)
+        .filter(Boolean) as string[];
 
-    if (activeTenantEmails.length > 0) {
-      await Promise.allSettled(
-        activeTenantEmails.map(email => 
-          sendEmail({
-            to: email,
-            subject: title,
-            html: `
-              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <h2 style="color: #6366f1;">Important Announcement</h2>
-                <p style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0;">${title}</p>
-                <p style="color: #475569; font-size: 15px; line-height: 1.6;">${message}</p>
-                <a href="${siteUrl}/tenant" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
-                  Go to Tenant Portal
-                </a>
-              </div>
-            `
-          })
-        )
-      );
+      console.log(`[Broadcast] Sending emails to ${activeTenantEmails.length} tenant(s):`, activeTenantEmails);
+
+      if (activeTenantEmails.length > 0) {
+        const emailResults = await Promise.allSettled(
+          activeTenantEmails.map(email =>
+            sendEmail({
+              to: email,
+              subject: title,
+              html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                  <h2 style="color: #6366f1;">Important Announcement</h2>
+                  <p style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0;">${title}</p>
+                  <p style="color: #475569; font-size: 15px; line-height: 1.6;">${message}</p>
+                  <a href="${siteUrl}/tenant" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Go to Tenant Portal
+                  </a>
+                </div>
+              `
+            })
+          )
+        );
+        emailResults.forEach((result, i) => {
+          if (result.status === 'rejected') {
+            console.error(`[Broadcast] Email to ${activeTenantEmails[i]} failed:`, result.reason);
+          } else {
+            console.log(`[Broadcast] Email to ${activeTenantEmails[i]}:`, result.value);
+          }
+        });
+      }
     }
 
     return { success: true };
