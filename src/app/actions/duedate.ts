@@ -111,7 +111,7 @@ export async function approveDueDateChangeRequest(
     const newMoveInDate = new Date(moveInDate);
     newMoveInDate.setDate(request.requested_anniversary_day);
 
-    const { error: tUpdateErr } = await (supabase as any)
+    const { error: updateTenantErr } = await (supabase as any)
       .from('tenants')
       .update({
         move_in_date: newMoveInDate.toISOString().split('T')[0],
