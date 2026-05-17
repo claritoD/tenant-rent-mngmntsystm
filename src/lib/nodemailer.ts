@@ -20,10 +20,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  text,
 }: {
   to: string;
   subject: string;
   html: string;
+  text?: string; // plain-text fallback — reduces spam score
 }) {
   try {
     const transporter = getTransporter();
@@ -32,11 +34,24 @@ export async function sendEmail({
       return { success: false, error: 'Gmail not configured' };
     }
 
+    const senderName = process.env.GMAIL_SENDER_NAME ?? 'RentsEasy';
+    const senderEmail = process.env.GMAIL_EMAIL!;
+
     const mailOptions = {
-      from: process.env.GMAIL_EMAIL,
+      // Proper display name reduces spam score
+      from: `"${senderName}" <${senderEmail}>`,
       to,
       subject,
+      // Plain-text alternative is required for good spam scores
+      text: text ?? html.replace(/<[^>]+>/g, '').replace(/\s{2,}/g, ' ').trim(),
       html,
+      headers: {
+        // Tell Gmail this is not bulk/transactional, reduces spam filtering
+        'X-Mailer': 'RentsEasy Notification System',
+        'X-Priority': '3',
+        // List-Unsubscribe header — marks as legitimate mailing
+        'List-Unsubscribe': `<mailto:${senderEmail}?subject=Unsubscribe>`,
+      },
     };
 
     await transporter.sendMail(mailOptions);
@@ -48,3 +63,4 @@ export async function sendEmail({
     return { success: false, error: err };
   }
 }
+

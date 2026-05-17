@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Disable client-side router cache for dynamic pages so auth-gated pages
+    // (like the tenant dashboard) always re-fetch from the server.
+    // This ensures the unread badge and new announcements are always fresh.
+    staleTimes: { dynamic: 0 },
+  },
   // Allow HMR from other devices on your local network (e.g. phone, tablet)
   allowedDevOrigins: ['192.168.1.43'],
   images: {
