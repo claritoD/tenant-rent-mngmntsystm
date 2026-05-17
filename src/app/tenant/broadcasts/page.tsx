@@ -88,6 +88,18 @@ export default async function BulletinBoardPage() {
   );
 }
 
+function getExpiryLabel(expiresAt: string | null): { label: string; urgent: boolean } | null {
+  if (!expiresAt) return null;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return null;
+  const totalHours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  const urgent = totalHours < 24;
+  if (days > 0) return { label: `Expires in ${days}d ${hours}h`, urgent };
+  return { label: `Expires in ${hours}h`, urgent: true };
+}
+
 function AnnouncementCard({ ann, type }: { ann: Announcement, type: 'global' | 'building' }) {
   const isGlobal = type === 'global';
   const accentColor = isGlobal ? 'var(--brand-500)' : 'var(--info)';
@@ -112,7 +124,23 @@ function AnnouncementCard({ ann, type }: { ann: Announcement, type: 'global' | '
       )}
       <div style={{ marginBottom: '1rem' }}>
         <h3 style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{ann.title}</h3>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>{formatDate(ann.created_at)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>{formatDate(ann.created_at)}</span>
+          {(() => {
+            const expiry = getExpiryLabel(ann.expires_at);
+            if (!expiry) return null;
+            return (
+              <span style={{
+                fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '1rem',
+                background: expiry.urgent ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                color: expiry.urgent ? '#ef4444' : '#d97706',
+                border: `1px solid ${expiry.urgent ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)'}`,
+              }}>
+                ⏱ {expiry.label}
+              </span>
+            );
+          })()}
+        </div>
       </div>
       <div className="markdown-body" style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '75ch' }}>
         <ReactMarkdown remarkPlugins={[remarkGfm]}>

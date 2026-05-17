@@ -9,6 +9,18 @@ import { formatDate } from '@/utils/format';
 import { compressImage } from '@/utils/image';
 import type { Announcement } from '@/types/database.types';
 
+function getExpiryLabel(expiresAt: string | null): { label: string; urgent: boolean } | null {
+  if (!expiresAt) return null;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return { label: 'Expired', urgent: true };
+  const totalHours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  const urgent = totalHours < 24;
+  if (days > 0) return { label: `${days}d ${hours}h left`, urgent };
+  return { label: `${hours}h left`, urgent: true };
+}
+
 export default function BroadcastPage() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -377,11 +389,27 @@ export default function BroadcastPage() {
                             <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
                           </div>
                         )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                           <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
-                          <span style={{ fontSize: '0.7rem', color: '#6366f1', background: 'rgba(99,102,241,0.08)', padding: '0.1rem 0.4rem', borderRadius: '1rem', fontWeight: 500 }}>
-                            {ann.property_id ? properties.find(p => p.id === ann.property_id)?.name : 'Global'}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            {(() => {
+                              const expiry = getExpiryLabel(ann.expires_at);
+                              if (!expiry) return <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Never expires</span>;
+                              return (
+                                <span style={{
+                                  fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '1rem',
+                                  background: expiry.urgent ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                                  color: expiry.urgent ? '#ef4444' : '#d97706',
+                                  border: `1px solid ${expiry.urgent ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)'}`,
+                                }}>
+                                  ⏱ {expiry.label}
+                                </span>
+                              );
+                            })()}
+                            <span style={{ fontSize: '0.7rem', color: '#6366f1', background: 'rgba(99,102,241,0.08)', padding: '0.1rem 0.4rem', borderRadius: '1rem', fontWeight: 500 }}>
+                              {ann.property_id ? properties.find(p => p.id === ann.property_id)?.name : 'Global'}
+                            </span>
+                          </div>
                         </div>
                       </>
                     )}
