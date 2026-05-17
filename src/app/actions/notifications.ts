@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import webpush from 'web-push';
 import { sendEmail } from '@/lib/nodemailer';
+import { ownerAlertEmail, tenantAlertEmail, announcementEmail } from '@/lib/emailTemplates';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 // Setup web-push VAPID details
@@ -144,43 +145,7 @@ export async function broadcastMessageToTenants(title: string, message: string, 
               subject: `[RentsEasy] ${title}`,
               // Plain-text version — critical for avoiding spam filters
               text: `${title}\n\n${message}\n\nView on portal: ${siteUrl}/tenant\n\n---\nThis message was sent by your landlord via RentsEasy. Do not reply to this email.`,
-              html: `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);max-width:600px;width:100%;">
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;">
-            <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);font-weight:500;letter-spacing:0.05em;text-transform:uppercase;">RentsEasy</p>
-            <h1 style="margin:4px 0 0;font-size:22px;font-weight:700;color:#ffffff;">Announcement</h1>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:32px;">
-            <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1e293b;">${title}</h2>
-            <div style="font-size:15px;color:#475569;line-height:1.7;white-space:pre-wrap;">${message}</div>
-            <div style="margin-top:32px;">
-              <a href="${siteUrl}/tenant" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">
-                View in Tenant Portal →
-              </a>
-            </div>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="background:#f8fafc;padding:20px 32px;border-top:1px solid #e2e8f0;">
-            <p style="margin:0;font-size:12px;color:#94a3b8;">This message was sent by your landlord via <strong>RentsEasy</strong>. Please do not reply to this email.</p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`
+              html: announcementEmail({ title, message }),
             })
           )
         );
@@ -258,17 +223,8 @@ async function sendEmailAlertToOwner(subject: string, body: string, url: string)
 
     await sendEmail({
       to: ownerEmail,
-      subject,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #6366f1;">${subject}</h2>
-          <p style="color: #334155; font-size: 15px;">${body}</p>
-          <a href="${url}" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
-            View in Dashboard
-          </a>
-          <p style="margin-top: 24px; font-size: 12px; color: #94a3b8;">This is an automated alert from RentsEasy.</p>
-        </div>
-      `,
+      subject: `[RentsEasy] ${subject}`,
+      html: ownerAlertEmail({ subject, body, actionUrl: url }),
     });
   } catch (err) {
     console.error('sendEmailAlertToOwner failed:', err);
@@ -332,17 +288,8 @@ async function sendEmailAlertToTenant(tenantId: string, subject: string, body: s
 
     await sendEmail({
       to: tenantEmail,
-      subject,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #6366f1;">${subject}</h2>
-          <p style="color: #334155; font-size: 15px;">${body}</p>
-          <a href="${url}" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
-            View Dashboard
-          </a>
-          <p style="margin-top: 24px; font-size: 12px; color: #94a3b8;">This is an automated alert from your landlord via RentsEasy.</p>
-        </div>
-      `,
+      subject: `[RentsEasy] ${subject}`,
+      html: tenantAlertEmail({ subject, body, actionUrl: url }),
     });
   } catch (err) {
     console.error('sendEmailAlertToTenant failed:', err);

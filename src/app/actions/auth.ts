@@ -2,6 +2,7 @@
 
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { sendEmail } from '@/lib/nodemailer';
+import { passwordResetEmail } from '@/lib/emailTemplates';
 
 // Helper to get Admin Client for bypassing RLS
 function getAdminSupabase() {
@@ -98,20 +99,8 @@ export async function sendPasswordResetEmail(email: string) {
     // 2. Send via Nodemailer
     const emailResult = await sendEmail({
       to: normalizedEmail,
-      subject: 'Password Reset Request - RentsEasy',
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #6366f1;">Password Reset</h2>
-          <p>We received a request to reset your password for your RentsEasy account.</p>
-          <p>Click the link below to securely set a new password. This link is valid for 24 hours.</p>
-          
-          <div style="margin: 30px 0;">
-            <a href="${actionLink}" style="background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Reset My Password</a>
-          </div>
-
-          <p style="font-size: 13px; color: #64748b;">If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
-        </div>
-      `
+      subject: '[RentsEasy] Password Reset Request',
+      html: passwordResetEmail({ actionLink }),
     });
 
     if (!emailResult.success) {
@@ -119,6 +108,29 @@ export async function sendPasswordResetEmail(email: string) {
     }
 
     return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}
+
+/** Owner-triggered: send password reset email to a specific tenant by their user ID */
+export async function sendTenantPasswordReset(tenantId: string) {
+  try {
+    const adminSupabase = getAdminSupabase();
+
+    // Verify the caller is the owner
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
+
+    // Look up tenant email from Auth
+    const { data: authData, error: authErr } = await adminSupabase.auth.admin.getUserById(tenantId);
+    if (authErr || !authData?.user?.email) throw new Error('Tenant email not found');
+
+    // Reuse existing reset flow
+    const result = await sendPasswordResetEmail(authData.user.email);
+    return result;
   } catch (err: unknown) {
     return { error: (err as Error).message };
   }

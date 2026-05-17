@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import type { Tenant } from '@/types/database.types';
 import { sendEmail } from '@/lib/nodemailer';
+import { paymentVerifiedEmail } from '@/lib/emailTemplates';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { triggerOwnerAlerts } from './notifications';
@@ -64,14 +65,8 @@ export async function verifyPayment(paymentId: string) {
       try {
         await sendEmail({
           to: email,
-          subject: `Payment Verified - ₱${amount.toFixed(2)}`,
-          html: `
-            <h2>Hello ${tenant.name},</h2>
-            <p>Your GCash payment of <strong>₱${amount.toFixed(2)}</strong> has been verified and applied to your account.</p>
-            <p>Your new outstanding arrears balance is <strong>₱${newArrears.toFixed(2)}</strong>.</p>
-            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Go to Dashboard</a></p>
-            <p>Thank you!</p>
-          `
+          subject: `[RentsEasy] Payment of ₱${amount.toFixed(2)} Verified`,
+          html: paymentVerifiedEmail({ name: tenant.name, amount, newArrears }),
         });
       } catch (e) {
         console.error('Email notification failed:', e);

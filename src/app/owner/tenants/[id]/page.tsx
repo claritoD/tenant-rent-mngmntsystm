@@ -7,6 +7,7 @@ import { ArchiveTenantButton } from '@/components/owner/ArchiveTenantButton';
 import { EditTenantToggle } from '@/components/owner/EditTenantToggle';
 import { MoveOutSettlement } from '@/components/owner/MoveOutSettlement';
 import { WaterRefillButton } from '@/components/owner/WaterRefillButton';
+import { ResetPasswordButton } from '@/components/owner/ResetPasswordButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Tenant Details' };
@@ -34,10 +35,11 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           <h1>{tenant.name}</h1>
           <p>Unit: {unit?.unit_name ?? 'Unassigned'} · Move-in: {formatDate(tenant.move_in_date)} · {tenant.is_active ? 'Active' : 'Archived'}</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           {tenant.is_active && tenant.water_mode === 'tank' && (
             <WaterRefillButton tenantId={id} tenantName={tenant.name} />
           )}
+          {tenant.is_active && <ResetPasswordButton tenantId={id} tenantName={tenant.name} />}
           {tenant.is_active && <EditTenantToggle tenant={tenant} units={allUnits ?? []} />}
           {tenant.is_active && <ArchiveTenantButton tenantId={id} name={tenant.name} />}
         </div>

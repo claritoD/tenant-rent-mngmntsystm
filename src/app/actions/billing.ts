@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { computeBill, latestReadingDate, periodLabel } from '@/utils/billing';
 import type { Tenant, Unit, MeterReading, WaterRefill } from '@/types/database.types';
 import { sendEmail } from '@/lib/nodemailer';
+import { billGeneratedEmail } from '@/lib/emailTemplates';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 
 export async function generateBill(tenantId: string) {
@@ -111,16 +112,18 @@ export async function generateBill(tenantId: string) {
       try {
         await sendEmail({
           to: email,
-          subject: `Your RentsEasy Bill for ${pLabel} is Ready`,
-          html: `
-            <h2>Hello ${(tenant as unknown as Tenant).name},</h2>
-            <p>Your hybrid utility bill for <strong>${pLabel}</strong> has been generated.</p>
-            <h3>Total Due: ₱${breakdown.totalDue.toFixed(2)}</h3>
-            <p>Please log in to your tenant dashboard to view the full breakdown and submit your GCash payment reference.</p>
-            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">View My Dashboard</a></p>
-            <br/>
-            <p>Thank you,<br/>Your Landlord</p>
-          `
+          subject: `[RentsEasy] Your Bill for ${pLabel} is Ready`,
+          html: billGeneratedEmail({
+            name: (tenant as unknown as Tenant).name,
+            period: pLabel,
+            totalDue: breakdown.totalDue,
+            breakdown: {
+              rent: breakdown.rent,
+              electric: breakdown.electric,
+              water: breakdown.water,
+              wifi: breakdown.wifi,
+            },
+          }),
         });
       } catch (e) {
         console.error('Email notification failed:', e);

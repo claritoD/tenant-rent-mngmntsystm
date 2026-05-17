@@ -10,6 +10,8 @@ export function ChangePasswordForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [matchError, setMatchError] = useState('');
 
   async function handleUpdatePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -17,10 +19,15 @@ export function ChangePasswordForm() {
       setError('Password must be at least 6 characters.');
       return;
     }
+    if (password !== confirmPassword) {
+      setMatchError('Passwords do not match.');
+      return;
+    }
 
     setLoading(true);
     setError('');
     setSuccess('');
+    setMatchError('');
 
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
@@ -30,6 +37,7 @@ export function ChangePasswordForm() {
     } else {
       setSuccess('Password updated successfully.');
       setPassword('');
+      setConfirmPassword('');
     }
     setLoading(false);
   }
@@ -38,9 +46,22 @@ export function ChangePasswordForm() {
     <div className="card" style={{ padding: '1.5rem', maxWidth: '480px' }}>
       <h2 style={{ fontWeight: 600, marginBottom: '1.25rem', fontSize: '1rem', color: 'white' }}>Change Password</h2>
       
-      {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '0.5rem', padding: '0.75rem', color: '#fca5a5', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</div>}
-      {success && <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '0.5rem', padding: '0.75rem', color: '#6ee7b7', fontSize: '0.875rem', marginBottom: '1rem' }}>{success}</div>}
-
+      {error && (
+          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '0.5rem', padding: '0.75rem', color: '#fca5a5', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            {error}
+          </div>
+        )}
+        {matchError && (
+          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '0.5rem', padding: '0.75rem', color: '#fca5a5', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            {matchError}
+          </div>
+        )}
+        {success && (
+          <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '0.5rem', padding: '0.75rem', color: '#6ee7b7', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            {success}
+          </div>
+        )}
+        
       <form onSubmit={handleUpdatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
           <label className="label" htmlFor="password">New Password</label>
@@ -58,6 +79,22 @@ export function ChangePasswordForm() {
             <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: '0.875rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#475569' }}>
               {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="label" htmlFor="confirmPassword">Confirm Password</label>
+          <div style={{ position: 'relative' }}>
+            <Lock size={16} style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }} />
+            <input 
+              id="confirmPassword" 
+              type={showPw ? 'text' : 'password'} 
+              required 
+              value={confirmPassword} 
+              onChange={e => setConfirmPassword(e.target.value)} 
+              placeholder="••••••••" 
+              style={{ width: '100%', padding: '0.65rem 2.5rem 0.65rem 2.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '0.5rem', color: 'white', fontSize: '0.875rem', outline: 'none' }} 
+            />
           </div>
         </div>
 

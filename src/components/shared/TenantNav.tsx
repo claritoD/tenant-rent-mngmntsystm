@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CreditCard, FileText, LogOut, Home, Wrench, Menu, X, Megaphone } from 'lucide-react';
+import { LayoutDashboard, CreditCard, FileText, LogOut, Home, Wrench, Menu, X, Megaphone, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/tenant/pay',    label: 'Pay',        icon: CreditCard },
   { href: '/tenant/vault',  label: 'Documents',   icon: FileText },
   { href: '/tenant/maintenance', label: 'Maintenance', icon: Wrench },
+  { href: '/tenant/settings', label: 'Settings', icon: Settings },
 ];
 
 export function TenantNav({ tenantName, unreadCount = 0 }: { tenantName: string, unreadCount?: number }) {

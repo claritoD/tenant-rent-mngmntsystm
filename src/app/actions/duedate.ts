@@ -1,8 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-
 import { sendEmail } from '@/lib/nodemailer';
+import { dueDateApprovedEmail, dueDateRejectedEmail } from '@/lib/emailTemplates';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { triggerOwnerAlerts } from '@/app/actions/notifications';
@@ -133,19 +133,13 @@ export async function approveDueDateChangeRequest(
       try {
         await sendEmail({
           to: email,
-          subject: 'Due Date Change Approved ✅',
-          html: `
-            <h2>Hello ${tenant_obj.name},</h2>
-            <p>Your request to change your bill due date has been <strong>approved</strong>!</p>
-            <p>
-              Your new due date is now the <strong>${request.requested_anniversary_day}${['st', 'nd', 'rd'][((request.requested_anniversary_day - 1) % 3)] || 'th'} of each month</strong>.
-              <br/>
-              (Previously: ${request.current_anniversary_day}${['st', 'nd', 'rd'][((request.current_anniversary_day - 1) % 3)] || 'th'} of each month)
-            </p>
-            ${ownerNote ? `<p><strong>Note from landlord:</strong><br/>${ownerNote}</p>` : ''}
-            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Go to Dashboard</a></p>
-            <p>Thank you!</p>
-          `
+          subject: '[RentsEasy] Due Date Change Approved ✅',
+          html: dueDateApprovedEmail({
+            name: tenant_obj.name,
+            newDay: request.requested_anniversary_day,
+            oldDay: request.current_anniversary_day,
+            ownerNote,
+          }),
         });
       } catch (e) {
         console.error('Email notification failed:', e);
@@ -207,15 +201,12 @@ export async function rejectDueDateChangeRequest(
       try {
         await sendEmail({
           to: email,
-          subject: 'Due Date Change Request Update ℹ️',
-          html: `
-            <h2>Hello ${tenant.name},</h2>
-            <p>Your request to change your bill due date has been <strong>declined</strong>.</p>
-            <p>Your due date remains the <strong>${request.current_anniversary_day}${['st', 'nd', 'rd'][((request.current_anniversary_day - 1) % 3)] || 'th'} of each month</strong>.</p>
-            ${ownerNote ? `<p><strong>Note from landlord:</strong><br/>${ownerNote}</p>` : ''}
-            <p>You can submit a new request if you'd like. If you have questions, please contact your landlord.</p>
-            <p style="margin-top: 20px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://rentseasy.vercel.app'}/login" style="background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Go to Dashboard</a></p>
-          `
+          subject: '[RentsEasy] Due Date Request Update ℹ️',
+          html: dueDateRejectedEmail({
+            name: tenant.name,
+            currentDay: request.current_anniversary_day,
+            ownerNote,
+          }),
         });
       } catch (e) {
         console.error('Email notification failed:', e);
