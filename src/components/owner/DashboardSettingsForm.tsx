@@ -57,7 +57,7 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
   function selectAll() {
     const newSettings = { ...settings };
     ANALYTIC_OPTIONS.forEach(opt => {
-      (newSettings as Record<string, unknown>)[opt.key] = true;
+      (newSettings as any)[opt.key] = true;
     });
     setSettings(newSettings);
   }
@@ -65,12 +65,12 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
   function deselectAll() {
     const newSettings = { ...settings };
     ANALYTIC_OPTIONS.forEach(opt => {
-      (newSettings as Record<string, unknown>)[opt.key] = false;
+      (newSettings as any)[opt.key] = false;
     });
     setSettings(newSettings);
   }
 
-  const enabledCount = ANALYTIC_OPTIONS.filter(opt => (settings as Record<string, unknown>)[opt.key]).length;
+  const enabledCount = ANALYTIC_OPTIONS.filter(opt => (settings as any)[opt.key]).length;
 
   return (
     <>
@@ -142,8 +142,8 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
                   onClick={() => toggleOption(key as keyof OwnerDashboardSettings)}
                   style={{
                     padding: '1rem', borderRadius: '0.5rem',
-                    background: (settings as Record<string, unknown>)[key] ? 'var(--brand-600)' : 'var(--bg-surface)',
-                    border: `1px solid ${(settings as Record<string, unknown>)[key] ? 'var(--brand-600)' : 'var(--border)'}`,
+                    background: (settings as any)[key] ? 'var(--brand-600)' : 'var(--bg-surface)',
+                    border: `1px solid ${(settings as any)[key] ? 'var(--brand-600)' : 'var(--border)'}`,
                     cursor: loading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s ease',
                   }}
@@ -151,20 +151,20 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                     <input
                       type="checkbox"
-                      checked={!!(settings as Record<string, unknown>)[key]}
+                      checked={!!(settings as any)[key]}
                       onChange={() => {}}
                       style={{ cursor: 'pointer' }}
                     />
                     <p style={{
                       fontWeight: 600, fontSize: '0.875rem',
-                      color: (settings as Record<string, unknown>)[key] ? '#fff' : 'var(--text-primary)',
+                      color: (settings as any)[key] ? '#fff' : 'var(--text-primary)',
                     }}>
                       {label}
                     </p>
                   </div>
                   <p style={{
                     fontSize: '0.75rem',
-                    color: (settings as Record<string, unknown>)[key] ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)',
+                    color: (settings as any)[key] ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)',
                   }}>
                     {description}
                   </p>
@@ -203,3 +203,4 @@ export function DashboardSettingsForm({ initialSettings }: SettingsProps) {
     </>
   );
 }
+

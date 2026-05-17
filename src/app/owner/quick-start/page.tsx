@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: 'Quick Start' };
 
 export default async function QuickStartPage() {
   const supabase = await createClient();
-  const { data: units } = await supabase.from('units').select('*').order('unit_name');
+  const { data: units } = await (supabase as any).from('units').select('*').order('unit_name');
 
   return (
     <div className="animate-enter">
@@ -19,3 +19,4 @@ export default async function QuickStartPage() {
     </div>
   );
 }
+

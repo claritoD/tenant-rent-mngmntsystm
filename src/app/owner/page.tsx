@@ -26,10 +26,10 @@ export default async function OwnerOverviewPage() {
     { count: pendingRefills },
     { data: expenses },
   ] = await Promise.all([
-    supabase.from('tenants').select('*', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('payments').select('amount, payment_method, verified_at, date_submitted').eq('status', 'verified'),
-    supabase.from('water_refills').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-    supabase.from('expenses').select('*'),
+    (supabase as any).from('tenants').select('*', { count: 'exact', head: true }).eq('is_active', true),
+    (supabase as any).from('payments').select('amount, payment_method, verified_at, date_submitted').eq('status', 'verified'),
+    (supabase as any).from('water_refills').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    (supabase as any).from('expenses').select('*'),
   ]);
 
   const gcashCollected = (payments ?? []).filter(p => p.payment_method === 'gcash').reduce((s, p) => s + p.amount, 0);
@@ -68,7 +68,7 @@ export default async function OwnerOverviewPage() {
       acc[e.category] = (acc[e.category] || 0) + e.amount;
       return acc;
     }, {})
-  ).map(([name, value]) => ({ name, value }));
+  ).map(([name, value]) => ({ name, value: value as number }));
 
   const stats = [
     { label: 'Active Tenants',     value: String(totalTenants ?? 0),  icon: Users,         color: '#6366f1' },

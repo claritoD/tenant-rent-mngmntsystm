@@ -10,7 +10,7 @@ import { triggerOwnerAlerts } from './notifications';
 
 export async function verifyPayment(paymentId: string) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
 
     // 1. Fetch payment
     const { data: payment, error: pErr } = await supabase
@@ -33,7 +33,7 @@ export async function verifyPayment(paymentId: string) {
     const newCredit = tenant.credit_balance + remaining;
 
     // 3. Update tenant
-    const { error: tErr } = await supabase.from('tenants').update({
+    const { error: tErr } = await (supabase as any).from('tenants').update({
       arrears: newArrears,
       credit_balance: newCredit
     }).eq('id', tenant.id);
@@ -41,11 +41,11 @@ export async function verifyPayment(paymentId: string) {
 
     // 4. Update bills if arrears is 0
     if (newArrears <= 0) {
-      await supabase.from('bills').update({ is_paid: true }).eq('tenant_id', tenant.id).eq('is_paid', false);
+      await (supabase as any).from('bills').update({ is_paid: true }).eq('tenant_id', tenant.id).eq('is_paid', false);
     }
 
     // 5. Mark payment verified
-    const { error: upErr } = await supabase.from('payments').update({
+    const { error: upErr } = await (supabase as any).from('payments').update({
       status: 'verified',
       verified_at: new Date().toISOString()
     }).eq('id', paymentId);
@@ -86,8 +86,8 @@ export async function verifyPayment(paymentId: string) {
 
 export async function rejectPayment(paymentId: string) {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase.from('payments').update({
+    const supabase: any = await createClient();
+    const { error } = await (supabase as any).from('payments').update({
       status: 'rejected',
       verified_at: new Date().toISOString()
     }).eq('id', paymentId);
@@ -100,7 +100,7 @@ export async function rejectPayment(paymentId: string) {
 
 export async function ownerRecordPayment(formData: FormData) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     
     const tenantId = formData.get('tenantId') as string;
     const amount = parseFloat(formData.get('amount') as string);
@@ -139,7 +139,7 @@ export async function ownerRecordPayment(formData: FormData) {
     const newCredit = tenant.credit_balance + remaining;
 
     // 4. Update tenant
-    const { error: tUpErr } = await supabase.from('tenants').update({
+    const { error: tUpErr } = await (supabase as any).from('tenants').update({
       arrears: newArrears,
       credit_balance: newCredit
     }).eq('id', tenantId);
@@ -147,7 +147,7 @@ export async function ownerRecordPayment(formData: FormData) {
 
     // 5. Mark bills as paid if arrears is 0
     if (newArrears <= 0) {
-      await supabase.from('bills').update({ is_paid: true }).eq('tenant_id', tenantId).eq('is_paid', false);
+      await (supabase as any).from('bills').update({ is_paid: true }).eq('tenant_id', tenantId).eq('is_paid', false);
     }
 
     revalidatePath('/owner/payments');
@@ -166,7 +166,7 @@ export async function submitTenantPayment(data: {
   proofUrl: string | null;
 }) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated.');
 
@@ -202,7 +202,7 @@ export async function submitTenantPayment(data: {
       }
     }
 
-    const { error: dbError } = await supabase.from('payments').insert({
+    const { error: dbError } = await (supabase as any).from('payments').insert({
       tenant_id: user.id,
       amount: data.amount,
       payment_method: data.method,
@@ -231,3 +231,4 @@ export async function submitTenantPayment(data: {
     return { error: (err as Error).message };
   }
 }
+

@@ -16,8 +16,8 @@ export default async function UnitsPage() {
 
   // Fetch all units and properties
   const [{ data: units }, { data: properties }] = await Promise.all([
-    supabase.from('units').select('*, property:properties(*)').order('created_at', { ascending: false }),
-    supabase.from('properties').select('*').order('name'),
+    (supabase as any).from('units').select('*, property:properties(*)').order('created_at', { ascending: false }),
+    (supabase as any).from('properties').select('*').order('name'),
   ]);
 
   const unitsByProperty = (properties ?? []).map(prop => ({

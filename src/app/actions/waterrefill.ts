@@ -6,7 +6,7 @@ import { triggerOwnerAlerts } from '@/app/actions/notifications';
 
 export async function requestWaterRefill() {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated.');
 
@@ -23,7 +23,7 @@ export async function requestWaterRefill() {
       return { success: true, message: 'Request already pending.' };
     }
 
-    const { error } = await supabase.from('water_refills').insert({
+    const { error } = await (supabase as any).from('water_refills').insert({
       tenant_id: user.id,
       status: 'pending',
     });
@@ -54,7 +54,7 @@ export async function requestWaterRefill() {
 /** Called by the owner to manually record a refill without a request */
 export async function recordManualWaterRefill(tenantId: string) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized.');
 
@@ -67,7 +67,7 @@ export async function recordManualWaterRefill(tenantId: string) {
 
     if (tErr || !tenant) throw new Error('Tenant not found.');
 
-    const { error } = await supabase.from('water_refills').insert({
+    const { error } = await (supabase as any).from('water_refills').insert({
       tenant_id: tenantId,
       status: 'completed',
       amount: tenant.water_tank_rate,
@@ -86,7 +86,7 @@ export async function recordManualWaterRefill(tenantId: string) {
 /** Resolves an existing water refill request (called from WaterRefillAction) */
 export async function resolveWaterRefill(requestId: string, status: 'completed' | 'cancelled', amount?: number, tenantId?: string, tenantName?: string) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized.');
 
@@ -98,7 +98,7 @@ export async function resolveWaterRefill(requestId: string, status: 'completed' 
       updateData.amount = amount;
     }
 
-    const { error } = await supabase.from('water_refills').update(updateData).eq('id', requestId);
+    const { error } = await (supabase as any).from('water_refills').update(updateData).eq('id', requestId);
     if (error) throw error;
 
     // Send notification if completed and we have tenant details
@@ -119,3 +119,4 @@ export async function resolveWaterRefill(requestId: string, status: 'completed' 
     return { error: (err as Error).message };
   }
 }
+

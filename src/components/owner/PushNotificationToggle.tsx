@@ -77,7 +77,7 @@ export function PushNotificationToggle() {
           const supabase = createClient();
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
-            await supabase.from('push_subscriptions').delete().eq('user_id', user.id);
+            await (supabase as any).from('push_subscriptions').delete().eq('user_id', user.id);
           }
         }
         setIsSubscribed(false);
@@ -282,3 +282,4 @@ export function PushNotificationToggle() {
     </div>
   );
 }
+

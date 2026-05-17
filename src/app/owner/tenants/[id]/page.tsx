@@ -16,12 +16,12 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
   const supabase = await createClient();
 
   const [{ data: tenant }, { data: bills }, { data: payments }, { data: vaultDocs }, { data: allUnits }, { data: unbilledRefills }] = await Promise.all([
-    supabase.from('tenants').select('*, unit:units(*)').eq('id', id).single(),
-    supabase.from('bills').select('*').eq('tenant_id', id).order('bill_date', { ascending: false }).limit(12),
-    supabase.from('payments').select('*').eq('tenant_id', id).order('date_submitted', { ascending: false }).limit(20),
+    (supabase as any).from('tenants').select('*, unit:units(*)').eq('id', id).single(),
+    (supabase as any).from('bills').select('*').eq('tenant_id', id).order('bill_date', { ascending: false }).limit(12),
+    (supabase as any).from('payments').select('*').eq('tenant_id', id).order('date_submitted', { ascending: false }).limit(20),
     supabase.storage.from('vault').list(id),
-    supabase.from('units').select('*').order('unit_name'),
-    supabase.from('water_refills').select('*').eq('tenant_id', id).eq('status', 'completed').eq('billed', false),
+    (supabase as any).from('units').select('*').order('unit_name'),
+    (supabase as any).from('water_refills').select('*').eq('tenant_id', id).eq('status', 'completed').eq('billed', false),
   ]);
 
   if (!tenant) notFound();

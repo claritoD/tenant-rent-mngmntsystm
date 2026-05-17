@@ -6,7 +6,7 @@ import { triggerOwnerAlerts } from './notifications';
 
 export async function createMaintenanceTicket(formData: FormData) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated.');
 
@@ -17,7 +17,7 @@ export async function createMaintenanceTicket(formData: FormData) {
 
     // Anti-spam: check for same description in last 60 seconds
     const oneMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
-    const { data: recent } = await supabase
+    const { data: recent } = await (supabase as any)
       .from('maintenance_tickets')
       .select('id')
       .eq('tenant_id', user.id)
@@ -43,7 +43,7 @@ export async function createMaintenanceTicket(formData: FormData) {
       photoUrl = publicUrl;
     }
 
-    const { error } = await supabase.from('maintenance_tickets').insert({
+    const { error } = await (supabase as any).from('maintenance_tickets').insert({
       tenant_id: user.id,
       description,
       photo_url: photoUrl,
@@ -53,7 +53,7 @@ export async function createMaintenanceTicket(formData: FormData) {
     if (error) throw error;
 
     // Fetch tenant details for the notification
-    const { data: tenant } = await supabase.from('tenants').select('name').eq('id', user.id).single();
+    const { data: tenant } = await (supabase as any).from('tenants').select('name').eq('id', user.id).single();
 
     await triggerOwnerAlerts(
       'New Maintenance Ticket',
@@ -71,8 +71,8 @@ export async function createMaintenanceTicket(formData: FormData) {
 
 export async function updateTicketStatus(ticketId: string, status: string) {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase
+    const supabase: any = await createClient();
+    const { error } = await (supabase as any)
       .from('maintenance_tickets')
       .update({ status })
       .eq('id', ticketId);

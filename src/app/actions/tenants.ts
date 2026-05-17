@@ -9,7 +9,7 @@ import type { Tenant } from '@/types/database.types';
 /** Marks a tenant as inactive and unassigns them from their unit, but keeps their data for history. */
 export async function archiveTenant(tenantId: string) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
@@ -42,7 +42,7 @@ export async function deleteTenant(tenantId: string) {
     );
 
     // Verify requesting user is owner
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
@@ -62,7 +62,7 @@ export async function deleteTenant(tenantId: string) {
 
 export async function updateTenant(tenantId: string, data: Partial<Tenant>) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
     const { error } = await supabase
@@ -121,11 +121,11 @@ export async function quickStartTenant(data: {
     const userId = authData.user.id;
 
     // 2. Create Tenant Record
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
-    const { error: tErr } = await supabase.from('tenants').insert({
+    const { error: tErr } = await (supabase as any).from('tenants').insert({
       id: userId,
       name: data.name,
       unit_id: data.unit_id,
@@ -167,7 +167,7 @@ export async function quickStartTenant(data: {
         verified_at: new Date(p.date).toISOString()
       }));
 
-      const { error: pErr } = await supabase.from('payments').insert(paymentRecords);
+      const { error: pErr } = await (supabase as any).from('payments').insert(paymentRecords);
       if (pErr) throw new Error(`Payment Import Error: ${pErr.message}`);
     }
 
@@ -210,3 +210,4 @@ export async function quickStartTenant(data: {
     return { error: (err as Error).message };
   }
 }
+

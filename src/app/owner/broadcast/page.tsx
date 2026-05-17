@@ -74,7 +74,7 @@ export default function BroadcastPage() {
     setSuccess(false);
 
     try {
-      let imageUrl = null;
+      let imageUrl: string | null = null;
       if (imageFile) {
         const compressed = await compressImage(imageFile);
         imageUrl = await uploadFile(compressed);

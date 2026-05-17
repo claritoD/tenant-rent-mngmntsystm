@@ -42,7 +42,7 @@ export default function LoginPage() {
     
     // 2. Strict Verification for Tenants
     if (role === 'tenant') {
-      const { data: tenant, error: tErr } = await supabase
+      const { data: tenant, error: tErr } = await (supabase as any)
         .from('tenants')
         .select('is_active')
         .eq('id', data.user.id)

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function addExpense(formData: FormData) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
 
@@ -18,7 +18,7 @@ export async function addExpense(formData: FormData) {
       throw new Error('All fields are required.');
     }
 
-    const { error } = await supabase.from('expenses').insert({
+    const { error } = await (supabase as any).from('expenses').insert({
       amount,
       description,
       category: category as 'Repair' | 'Tax' | 'Utility' | 'Supplies' | 'Other',
@@ -37,10 +37,10 @@ export async function addExpense(formData: FormData) {
 
 export async function deleteExpense(expenseId: string) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
-    const { error } = await supabase.from('expenses').delete().eq('id', expenseId);
+    const { error } = await (supabase as any).from('expenses').delete().eq('id', expenseId);
     if (error) throw error;
     revalidatePath('/owner/expenses');
     revalidatePath('/owner');

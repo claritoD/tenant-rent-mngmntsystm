@@ -16,7 +16,7 @@ export function PaymentRow({ payment: p, onUpdate }: Props) {
 
   async function verify(status: 'verified' | 'rejected') {
     setLoading(true);
-    await supabase.from('payments').update({
+    await (supabase as any).from('payments').update({
       status,
       verified_at: new Date().toISOString(),
     }).eq('id', p.id);
@@ -51,3 +51,4 @@ export function PaymentRow({ payment: p, onUpdate }: Props) {
     </tr>
   );
 }
+

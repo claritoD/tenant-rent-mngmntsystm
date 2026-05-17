@@ -36,7 +36,7 @@ export function AddUnitForm({ onClose }: Props) {
   // Fetch properties for selection
   useEffect(() => {
     async function loadProperties() {
-      const { data } = await supabase.from('properties').select('id, name').order('name');
+      const { data } = await (supabase as any).from('properties').select('id, name').order('name');
       if (data) {
         setProperties(data);
       }
@@ -88,7 +88,7 @@ export function AddUnitForm({ onClose }: Props) {
       }
 
       // 4. Insert Unit into database
-      const { error: insertError } = await supabase.from('units').insert({
+      const { error: insertError } = await (supabase as any).from('units').insert({
         unit_name: form.unit_name.trim(),
         base_rent: parseFloat(form.base_rent || '0'),
         interior_photos: interiorUrls,
@@ -235,3 +235,4 @@ export function AddUnitForm({ onClose }: Props) {
     </div>
   );
 }
+

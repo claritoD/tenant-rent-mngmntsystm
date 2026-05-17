@@ -12,7 +12,7 @@ export default async function TenantLayout({ children }: { children: React.React
   if (!user) redirect('/login');
   if (user.user_metadata?.role === 'owner') redirect('/owner');
 
-  const { data: tenant } = await supabase.from('tenants').select('name, last_read_announcements_at, unit:units(property_id)').eq('id', user.id).single();
+  const { data: tenant } = await (supabase as any).from('tenants').select('name, last_read_announcements_at, unit:units(property_id)').eq('id', user.id).single();
 
   // Fetch unread count
   const { count: unreadCount } = await supabase

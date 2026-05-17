@@ -91,7 +91,7 @@ export default function MeterReadingForm({ tenants }: Props) {
     }
 
     const supabase = createClient();
-    const { error: dbError } = await supabase.from('meter_readings').insert({
+    const { error: dbError } = await (supabase as any).from('meter_readings').insert({
       tenant_id: tenantId,
       type,
       prev_reading: parseFloat(prevReading),
@@ -212,3 +212,4 @@ export default function MeterReadingForm({ tenants }: Props) {
     </div>
   );
 }
+

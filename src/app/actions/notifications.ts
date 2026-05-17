@@ -23,11 +23,11 @@ function getAdminSupabase() {
 /** Saves a push subscription for the current user. Supports multiple devices. */
 export async function savePushSubscription(subscription: Record<string, unknown>) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated.');
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('push_subscriptions')
       .upsert({ 
         user_id: user.id, 
@@ -53,7 +53,7 @@ export async function broadcastMessageToTenants(title: string, message: string, 
 
     // 1. Log the announcement in the DB
     const { data: { user: owner } } = await (await createClient()).auth.getUser();
-    let expires_at = null;
+    let expires_at: string | null = null;
     if (expiresInDays !== null) {
       const d = new Date();
       d.setDate(d.getDate() + expiresInDays);

@@ -17,14 +17,14 @@ export default async function TenantDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: tenant } = await supabase.from('tenants').select('*, unit:units(*, property:properties(*))').eq('id', user.id).single();
+  const { data: tenant } = await (supabase as any).from('tenants').select('*, unit:units(*, property:properties(*))').eq('id', user.id).single();
   if (!tenant) return <p>Tenant record not found. Contact your landlord.</p>;
 
   const [{ data: latestBills }, { data: recentPayments }, { data: waterRefills }, { data: announcements }] = await Promise.all([
-    supabase.from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
-    supabase.from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
-    supabase.from('water_refills').select('*').eq('tenant_id', user.id).eq('billed', false).order('requested_at', { ascending: false }),
-    supabase.from('announcements')
+    (supabase as any).from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
+    (supabase as any).from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
+    (supabase as any).from('water_refills').select('*').eq('tenant_id', user.id).eq('billed', false).order('requested_at', { ascending: false }),
+    (supabase as any).from('announcements')
       .select('*')
       .or(`property_id.is.null${tenant.unit?.property_id ? `,property_id.eq.${tenant.unit.property_id}` : ''}`)
       .or('expires_at.is.null,expires_at.gt.now()')

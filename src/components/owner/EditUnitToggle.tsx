@@ -24,7 +24,7 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
   useEffect(() => {
     async function loadProperties() {
       const supabase = createClient();
-      const { data } = await supabase.from('properties').select('id, name').order('name');
+      const { data } = await (supabase as any).from('properties').select('id, name').order('name');
       if (data) setProperties(data);
     }
     loadProperties();
@@ -207,3 +207,4 @@ export function EditUnitToggle({ unit }: { unit: Unit }) {
     </>
   );
 }
+

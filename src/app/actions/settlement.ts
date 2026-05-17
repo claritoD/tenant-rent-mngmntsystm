@@ -11,7 +11,7 @@ export async function processMoveOut(tenantId: string, data: {
   returnDeposit: boolean;
 }) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
 
     // 1. Fetch tenant and latest readings
     const { data: tenant, error: tErr } = await supabase
@@ -64,7 +64,7 @@ export async function processMoveOut(tenantId: string, data: {
     // 4. Record as a Final Bill or Arrears Update
     // To keep it simple and clean, we'll update the tenant's arrears to the final settlement
     // and then archive them.
-    const { error: upErr } = await supabase.from('tenants').update({
+    const { error: upErr } = await (supabase as any).from('tenants').update({
       arrears: finalSettlement,
       is_active: false,
       unit_id: null,
@@ -74,7 +74,7 @@ export async function processMoveOut(tenantId: string, data: {
     if (upErr) throw upErr;
 
     // 5. Record final readings
-    await supabase.from('meter_readings').insert([
+    await (supabase as any).from('meter_readings').insert([
       { tenant_id: tenantId, type: 'electric', prev_reading: lastElectric?.curr_reading || 0, curr_reading: data.finalElectricReading, rate_per_unit: lastElectric?.rate_per_unit || 15, reading_date: data.moveOutDate },
       { tenant_id: tenantId, type: 'water', prev_reading: lastWater?.curr_reading || 0, curr_reading: data.finalWaterReading, rate_per_unit: lastWater?.rate_per_unit || 40, reading_date: data.moveOutDate },
     ]);
@@ -86,3 +86,4 @@ export async function processMoveOut(tenantId: string, data: {
     return { error: (err as Error).message };
   }
 }
+

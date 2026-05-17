@@ -10,8 +10,8 @@ export default async function TenantsPage() {
   const supabase = await createClient();
 
   const [{ data: tenants }, { data: units }] = await Promise.all([
-    supabase.from('tenants').select('*, unit:units(*, property:properties(*))').order('name'),
-    supabase.from('units').select('id, unit_name, base_rent, property:properties(name)').order('unit_name'),
+    (supabase as any).from('tenants').select('*, unit:units(*, property:properties(*))').order('name'),
+    (supabase as any).from('units').select('id, unit_name, base_rent, property:properties(name)').order('unit_name'),
   ]);
 
   return (

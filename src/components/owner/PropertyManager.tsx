@@ -23,7 +23,7 @@ export function PropertyManager() {
   }, [open]);
 
   async function loadProperties() {
-    const { data } = await supabase.from('properties').select('*').order('name');
+    const { data } = await (supabase as any).from('properties').select('*').order('name');
     if (data) setProperties(data);
   }
 
@@ -42,7 +42,7 @@ export function PropertyManager() {
   async function handleUpdate(id: string) {
     const prop = properties.find(p => p.id === id);
     setLoading(true);
-    const res = await updateProperty(id, prop.name, prop.address);
+    const res = await updateProperty(id, prop?.name ?? '', prop?.address ?? '');
     if (!res.error) setEditingId(null);
     setLoading(false);
   }
@@ -107,7 +107,7 @@ export function PropertyManager() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <input className="input" style={{ flex: 1 }} value={p.name} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, name: e.target.value} : item))} />
-                        <input className="input" style={{ flex: 2 }} value={p.address} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, address: e.target.value} : item))} />
+                        <input className="input" style={{ flex: 2 }} value={p.address ?? ''} onChange={e => setProperties(properties.map(item => item.id === p.id ? {...item, address: e.target.value} : item))} />
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button className="btn btn-ghost" onClick={() => setEditingId(null)}>Cancel</button>
@@ -143,3 +143,4 @@ export function PropertyManager() {
     </>
   );
 }
+

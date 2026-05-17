@@ -6,7 +6,7 @@ import type { Unit } from '@/types/database.types';
 
 export async function updateUnit(unitId: string, data: Partial<Unit>) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
     const { error } = await supabase
@@ -25,7 +25,7 @@ export async function updateUnit(unitId: string, data: Partial<Unit>) {
 
 export async function deleteUnit(unitId: string) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized');
     const { error } = await supabase

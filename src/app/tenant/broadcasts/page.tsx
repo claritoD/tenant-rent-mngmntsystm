@@ -18,10 +18,10 @@ export default async function BulletinBoardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: tenant } = await supabase.from('tenants').select('*, unit:units(property_id, property:properties(name))').eq('id', user.id).single();
+  const { data: tenant } = await (supabase as any).from('tenants').select('*, unit:units(property_id, property:properties(name))').eq('id', user.id).single();
   if (!tenant) return <p>Tenant record not found.</p>;
 
-  const { data: announcements } = await supabase.from('announcements')
+  const { data: announcements } = await (supabase as any).from('announcements')
     .select('*')
     .or(`property_id.is.null${tenant.unit?.property_id ? `,property_id.eq.${tenant.unit.property_id}` : ''}`)
     .or('expires_at.is.null,expires_at.gt.now()')
@@ -128,3 +128,4 @@ function AnnouncementCard({ ann, type }: { ann: Announcement, type: 'global' | '
     </div>
   );
 }
+

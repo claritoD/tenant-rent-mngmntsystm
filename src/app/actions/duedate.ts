@@ -12,7 +12,7 @@ export async function submitDueDateChangeRequest(
   reason: string
 ) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return { error: 'Not authenticated.' };
@@ -76,7 +76,7 @@ export async function approveDueDateChangeRequest(
   ownerNote?: string
 ) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return { error: 'Not authenticated.' };
@@ -165,7 +165,7 @@ export async function rejectDueDateChangeRequest(
   ownerNote?: string
 ) {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return { error: 'Not authenticated.' };

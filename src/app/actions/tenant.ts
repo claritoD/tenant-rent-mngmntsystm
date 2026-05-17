@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function markAnnouncementsAsRead() {
   try {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
