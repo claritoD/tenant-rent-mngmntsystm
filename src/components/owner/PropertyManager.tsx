@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { Building, Plus, X, Trash2, Edit2, Check } from 'lucide-react';
 import { createProperty, updateProperty, deleteProperty } from '@/app/actions/properties';
 import { createClient } from '@/lib/supabase/client';
+import type { Property } from '@/types/database.types';
 
 export function PropertyManager() {
   const [open, setOpen] = useState(false);
-  const [properties, setProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(false);
   
   const [newName, setNewName] = useState('');
@@ -18,6 +19,7 @@ export function PropertyManager() {
 
   useEffect(() => {
     if (open) loadProperties();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   async function loadProperties() {

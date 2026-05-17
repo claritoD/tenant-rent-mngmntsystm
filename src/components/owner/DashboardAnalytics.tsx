@@ -1,7 +1,7 @@
 'use client';
 
 import { formatPeso } from '@/utils/format';
-import { BarChart3, TrendingUp, Users, AlertCircle, Droplet, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, AlertCircle, Droplet, Calendar, type LucideIcon } from 'lucide-react';
 
 interface DashboardAnalyticsProps {
   occupancy: {
@@ -48,7 +48,7 @@ export function AnalyticCard({
   title: string; 
   value: string | number; 
   subtitle?: string; 
-  icon?: any;
+  icon?: LucideIcon;
   color?: string;
   trend?: { value: number; label: string; up: boolean };
 }) {

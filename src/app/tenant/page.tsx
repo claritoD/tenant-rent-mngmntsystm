@@ -1,11 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { formatPeso, formatDate, ordinal } from '@/utils/format';
 import { nextAnniversaryDate } from '@/utils/billing';
 import { WaterRefillRequest } from '@/components/tenant/WaterRefillRequest';
 import { DueDateChangeRequest } from '@/components/tenant/DueDateChangeRequest';
 import { Pin } from 'lucide-react';
 import type { Metadata } from 'next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export const metadata: Metadata = { title: 'My Dashboard' };
 
@@ -20,10 +23,11 @@ export default async function TenantDashboardPage() {
   const [{ data: latestBills }, { data: recentPayments }, { data: waterRefills }, { data: announcements }] = await Promise.all([
     supabase.from('bills').select('*').eq('tenant_id', user.id).order('bill_date', { ascending: false }).limit(3),
     supabase.from('payments').select('*').eq('tenant_id', user.id).order('date_submitted', { ascending: false }).limit(5),
-    supabase.from('water_refills').select('*').eq('tenant_id', user.id).order('requested_at', { ascending: false }).limit(5),
+    supabase.from('water_refills').select('*').eq('tenant_id', user.id).eq('billed', false).order('requested_at', { ascending: false }),
     supabase.from('announcements')
       .select('*')
       .or(`property_id.is.null${tenant.unit?.property_id ? `,property_id.eq.${tenant.unit.property_id}` : ''}`)
+      .or('expires_at.is.null,expires_at.gt.now()')
       .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(5),
@@ -35,6 +39,7 @@ export default async function TenantDashboardPage() {
   const nextBillDate = nextAnniversaryDate(tenant.move_in_date);
   const currentBill = latestBills?.[0];
   const pendingRefill = waterRefills?.find(r => r.status === 'pending');
+  const unbilledCompletedRefills = waterRefills?.filter(r => r.status === 'completed') ?? [];
 
   const globalAnnouncements = (announcements ?? []).filter(a => !a.property_id);
   const buildingAnnouncements = (announcements ?? []).filter(a => a.property_id);
@@ -45,7 +50,7 @@ export default async function TenantDashboardPage() {
       <div className="page-header">
         <h1>Hello, {tenant.name.split(' ')[0]} 👋</h1>
         <p>
-          Location: <strong>{(unit as any)?.property?.name ?? '—'} · Unit {unit?.unit_name ?? '—'}</strong> 
+          Location: <strong>{unit?.property?.name ?? '—'} · Unit {unit?.unit_name ?? '—'}</strong> 
           <span style={{ margin: '0 0.75rem', opacity: 0.3 }}>|</span>
           Next bill: <strong>{formatDate(nextBillDate.toISOString())}</strong> (your {ordinal(tenant.anniversary_day)})
         </p>
@@ -55,8 +60,9 @@ export default async function TenantDashboardPage() {
       {buildingAnnouncements.length > 0 && (
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Building Updates ({(unit as any)?.property?.name})</h2>
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Building Updates ({unit?.property?.name})</h2>
             <div style={{ height: '2px', flex: 1, background: '#bae6fd', opacity: 0.5 }} />
+            <Link href="/tenant/broadcasts" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0369a1', textDecoration: 'none' }}>View All →</Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {buildingAnnouncements.map(ann => (
@@ -73,7 +79,17 @@ export default async function TenantDashboardPage() {
                   </div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
                 </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.content}</p>
+                <div className="markdown-body" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {ann.content}
+                  </ReactMarkdown>
+                </div>
+                {ann.image_url && (
+                  <div style={{ marginTop: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -86,6 +102,7 @@ export default async function TenantDashboardPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
             <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Universal Board</h2>
             <div style={{ height: '2px', flex: 1, background: '#c7d2fe', opacity: 0.5 }} />
+            <Link href="/tenant/broadcasts" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4f46e5', textDecoration: 'none' }}>View All →</Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {globalAnnouncements.map(ann => (
@@ -102,7 +119,17 @@ export default async function TenantDashboardPage() {
                   </div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
                 </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{ann.content}</p>
+                <div className="markdown-body" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {ann.content}
+                  </ReactMarkdown>
+                </div>
+                {ann.image_url && (
+                  <div style={{ marginTop: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -113,40 +140,45 @@ export default async function TenantDashboardPage() {
       {currentBill && (
         <div style={{
           background: 'linear-gradient(135deg, var(--brand-700) 0%, var(--brand-500) 100%)',
-          borderRadius: '1rem',
-          padding: '1.5rem 2rem',
-          marginBottom: '1.5rem',
+          borderRadius: 'var(--radius-lg)',
+          padding: '2.5rem',
+          marginBottom: '2rem',
           color: '#fff',
           position: 'relative',
           overflow: 'hidden',
+          boxShadow: 'var(--shadow-brand)',
         }}>
+          {/* Decorative elements */}
           <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
-          <p className="section-title" style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '0.25rem' }}>
-            {currentBill.period_label} · {currentBill.is_paid ? '✅ Paid' : '⚠️ Unpaid'}
-          </p>
-          <p style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-            {formatPeso(currentBill.total_due)}
-          </p>
-          <div className="flex-start" style={{ flexWrap: 'wrap', fontSize: '0.8rem', opacity: 0.85, gap: '1.25rem' }}>
-            <span>🏠 Rent: {formatPeso(currentBill.rent_amount)}</span>
-            <span>⚡ Electric: {formatPeso(currentBill.electric_amount)}</span>
-            <span>💧 Water: {formatPeso(currentBill.water_amount)}</span>
-            {currentBill.wifi_amount > 0 && <span>📶 WiFi: {formatPeso(currentBill.wifi_amount)}</span>}
-            {currentBill.arrears_carried > 0 && <span style={{ color: '#fca5a5' }}>⚠️ Arrears: {formatPeso(currentBill.arrears_carried)}</span>}
-            {currentBill.credit_applied > 0 && <span style={{ color: '#6ee7b7' }}>✨ Credit: -{formatPeso(currentBill.credit_applied)}</span>}
+          <div style={{ position: 'absolute', bottom: '-20px', left: '20%', width: '100px', height: '100px', background: 'rgba(255,255,255,0.03)', borderRadius: '50%' }} />
+          
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {currentBill.period_label} · {currentBill.is_paid ? '✅ Paid' : '⚠️ Unpaid'}
+            </p>
+            <p style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
+              {formatPeso(currentBill.total_due)}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', fontSize: '0.875rem', opacity: 0.9, gap: '1.5rem', marginBottom: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.25rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>🏠 Rent: <strong>{formatPeso(currentBill.rent_amount)}</strong></span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>⚡ Elec: <strong>{formatPeso(currentBill.electric_amount)}</strong></span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>💧 Water: <strong>{formatPeso(currentBill.water_amount)}</strong></span>
+              {currentBill.wifi_amount > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>📶 WiFi: <strong>{formatPeso(currentBill.wifi_amount)}</strong></span>}
+              {currentBill.arrears_carried > 0 && <span style={{ color: '#fecaca', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>⚠️ Arrears: <strong>{formatPeso(currentBill.arrears_carried)}</strong></span>}
+              {currentBill.credit_applied > 0 && <span style={{ color: '#a7f3d0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>✨ Credit: <strong>-{formatPeso(currentBill.credit_applied)}</strong></span>}
+            </div>
+            {!currentBill.is_paid && (
+              <a href="/tenant/pay"
+                className="btn"
+                style={{
+                  background: '#fff',
+                  color: 'var(--brand-700)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }}>
+                Pay via GCash →
+              </a>
+            )}
           </div>
-          {!currentBill.is_paid && (
-            <a href="/tenant/pay"
-              style={{
-                display: 'inline-block', marginTop: '1.25rem',
-                background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: '0.5rem', padding: '0.5rem 1.25rem',
-                color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.875rem',
-              }}>
-              Pay via GCash →
-            </a>
-          )}
         </div>
       )}
 
@@ -197,25 +229,42 @@ export default async function TenantDashboardPage() {
 
       {/* Water Supply Card */}
       {tenant.water_mode === 'tank' && (
-        <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(59,130,246,0.05)', borderColor: 'rgba(59,130,246,0.2)' }}>
-          <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h2 className="font-semibold text-primary" style={{ color: '#1e40af', marginBottom: '0.25rem' }}>Water Supply</h2>
-              <p className="text-sm text-secondary">
-                Your unit uses a water tank. Request a refill when running low. Cost per refill is {formatPeso(tenant.water_tank_rate)}.
-              </p>
-            </div>
-            <div>
-              {pendingRefill ? (
-                <div style={{ background: '#dbeafe', color: '#1e40af', padding: '0.6rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, border: '1px solid #bfdbfe' }}>
-                  ⏳ Refill requested on {formatDate(pendingRefill.requested_at)}
-                </div>
-              ) : (
-                <WaterRefillRequest />
-              )}
+        <>
+          <div className="card" style={{ marginBottom: unbilledCompletedRefills.length > 0 ? '0.5rem' : '1.5rem', background: 'rgba(59,130,246,0.05)', borderColor: 'rgba(59,130,246,0.2)' }}>
+            <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h2 className="font-semibold text-primary" style={{ color: '#1e40af', marginBottom: '0.25rem' }}>Water Supply</h2>
+                <p className="text-sm text-secondary">
+                  Your unit uses a water tank. Request a refill when running low. Cost per refill is {formatPeso(tenant.water_tank_rate)}.
+                </p>
+              </div>
+              <div>
+                {pendingRefill ? (
+                  <div style={{ background: '#dbeafe', color: '#1e40af', padding: '0.6rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, border: '1px solid #bfdbfe' }}>
+                    ⏳ Refill requested on {formatDate(pendingRefill.requested_at)}
+                  </div>
+                ) : (
+                  <WaterRefillRequest />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+          
+          {/* Unbilled Refills List */}
+          {unbilledCompletedRefills.length > 0 && (
+            <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(59,130,246,0.02)', borderColor: 'rgba(59,130,246,0.1)' }}>
+              <h2 className="font-semibold text-primary" style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>Unbilled Refills (To be added to next bill)</h2>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {unbilledCompletedRefills.map(r => (
+                  <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    <span>💧 Refilled on {formatDate(r.completed_at)}</span>
+                    <span style={{ fontWeight: 600 }}>{formatPeso(r.amount || tenant.water_tank_rate)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
       )}
 
       {/* Due Date Management Card */}

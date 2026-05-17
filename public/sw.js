@@ -1,7 +1,7 @@
 // RentsEasy Service Worker
 
 // Force new SW to activate immediately — no waiting for old tabs to close
-self.addEventListener('install', function (event) {
+self.addEventListener('install', function () {
   self.skipWaiting();
 });
 
@@ -33,7 +33,7 @@ self.addEventListener('push', function (event) {
         requireInteraction: false,
       };
     }
-  } catch (e) {
+  } catch (_e) {
     // If JSON parse fails try to use raw text as the body
     if (event.data) {
       options.body = event.data.text();

@@ -42,7 +42,7 @@ export async function compressImage(file: File, maxSizeBytes: number = 1024 * 10
         ctx.drawImage(img, 0, 0, width, height);
 
         // Start with 0.8 quality and reduce if still too large
-        let quality = 0.8;
+        const quality = 0.8;
         
         function toBlob(q: number) {
           canvas.toBlob(

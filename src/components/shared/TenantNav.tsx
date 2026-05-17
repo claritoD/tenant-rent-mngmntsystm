@@ -3,19 +3,20 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CreditCard, FileText, LogOut, Home, Wrench, Menu, X } from 'lucide-react';
+import { LayoutDashboard, CreditCard, FileText, LogOut, Home, Wrench, Menu, X, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
 
 const NAV_ITEMS = [
   { href: '/tenant',        label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/tenant/broadcasts', label: 'Bulletin Board', icon: Megaphone },
   { href: '/tenant/pay',    label: 'Pay',        icon: CreditCard },
   { href: '/tenant/vault',  label: 'Documents',   icon: FileText },
   { href: '/tenant/maintenance', label: 'Maintenance', icon: Wrench },
 ];
 
-export function TenantNav({ tenantName }: { tenantName: string }) {
+export function TenantNav({ tenantName, unreadCount = 0 }: { tenantName: string, unreadCount?: number }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -59,6 +60,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         <nav style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'nowrap' }} className="hide-mobile">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
+            const isBroadcast = href === '/tenant/broadcasts';
             return (
               <Link key={href} href={href}
                 style={{
@@ -69,9 +71,30 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
                   background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
+                  position: 'relative',
                 }}>
                 <Icon size={14} />
                 <span>{label}</span>
+                {isBroadcast && unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    background: '#ef4444',
+                    color: '#fff',
+                    borderRadius: '50%',
+                    width: '18px',
+                    height: '18px',
+                    fontSize: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    border: '2px solid var(--bg-surface)',
+                  }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -117,6 +140,7 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
         >
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
+            const isBroadcast = href === '/tenant/broadcasts';
             return (
               <Link key={href} href={href} onClick={() => setIsOpen(false)}
                 style={{
@@ -126,9 +150,30 @@ export function TenantNav({ tenantName }: { tenantName: string }) {
                   color: isActive ? '#fff' : 'var(--text-secondary)',
                   background: isActive ? 'linear-gradient(135deg, var(--brand-500), var(--brand-600))' : 'var(--bg-base)',
                   border: '1px solid var(--border)',
+                  position: 'relative',
                 }}>
                 <Icon size={20} />
                 {label}
+                {isBroadcast && unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: '#ef4444',
+                    color: '#fff',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    border: '2px solid #fff',
+                  }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}

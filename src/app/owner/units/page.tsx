@@ -2,12 +2,12 @@ import { createClient } from '@/lib/supabase/server';
 import { formatPeso, formatDate } from '@/utils/format';
 import Image from 'next/image';
 import { AddUnitToggle } from '@/components/owner/AddUnitToggle';
-import { MapPin, Image as ImageIcon, Home } from 'lucide-react';
+import { Image as ImageIcon, Home } from 'lucide-react';
 import { EditUnitToggle } from '@/components/owner/EditUnitToggle';
 import { DeleteUnitButton } from '@/components/owner/DeleteUnitButton';
 import { PropertyManager } from '@/components/owner/PropertyManager';
 import type { Metadata } from 'next';
-import type { Unit, Property } from '@/types/database.types';
+import type { Unit } from '@/types/database.types';
 
 export const metadata: Metadata = { title: 'Units' };
 
@@ -49,7 +49,7 @@ export default async function UnitsPage() {
             </div>
 
             <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
-              {prop.units.map((unit: any) => (
+              {prop.units.map((unit: Unit) => (
                 <UnitCard key={unit.id} unit={unit} />
               ))}
               {prop.units.length === 0 && (
@@ -66,7 +66,7 @@ export default async function UnitsPage() {
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Properties that are not part of a larger building group.</p>
             </div>
             <div className="grid-cols-auto" style={{ '--min-w': '320px' } as React.CSSProperties}>
-              {orphanedUnits.map((unit: any) => (
+              {orphanedUnits.map((unit: Unit) => (
                 <UnitCard key={unit.id} unit={unit} />
               ))}
             </div>
@@ -84,7 +84,7 @@ export default async function UnitsPage() {
   );
 }
 
-function UnitCard({ unit }: { unit: any }) {
+function UnitCard({ unit }: { unit: Unit }) {
   return (
     <div className="card animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       <div className="flex-between">

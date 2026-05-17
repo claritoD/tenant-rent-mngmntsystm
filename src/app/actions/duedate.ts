@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import type { Tenant, DueDateChangeRequest } from '@/types/database.types';
+
 import { sendEmail } from '@/lib/nodemailer';
 import { createClient as createServerClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
@@ -21,20 +21,20 @@ export async function submitDueDateChangeRequest(
     }
 
     // Get current tenant to verify existence
-    const { data: tenant, error: tErr } = await (supabase
-      .from('tenants') as any)
+    const { data: tenant, error: tErr } = await (supabase as any)
+      .from('tenants')
       .select('*')
       .eq('id', user.id)
       .single();
     
     if (tErr || !tenant) return { error: 'Tenant not found.' };
-    if ((tenant as unknown as Tenant).anniversary_day === requestedDay) {
+    if (tenant.anniversary_day === requestedDay) {
       return { error: 'The new due date is the same as your current due date.' };
     }
 
     // Check if there's already a pending request
-    const { data: pending } = await (supabase
-      .from('due_date_change_requests') as any)
+    const { data: pending } = await (supabase as any)
+      .from('due_date_change_requests')
       .select('*')
       .eq('tenant_id', user.id)
       .eq('status', 'pending')
@@ -43,11 +43,11 @@ export async function submitDueDateChangeRequest(
     if (pending) return { error: 'You already have a pending due date change request.' };
 
     // Create the request
-    const { error: insertErr } = await (supabase
-      .from('due_date_change_requests') as any)
+    const { error: insertErr } = await (supabase as any)
+      .from('due_date_change_requests')
       .insert({
         tenant_id: user.id,
-        current_anniversary_day: (tenant as unknown as Tenant).anniversary_day,
+        current_anniversary_day: tenant.anniversary_day,
         requested_anniversary_day: requestedDay,
         reason: reason || null,
       });
@@ -58,7 +58,7 @@ export async function submitDueDateChangeRequest(
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentease.vercel.app';
     await triggerOwnerAlerts(
       'Due Date Extension Request',
-      `${tenant.name} has requested to change their bill due date from day ${(tenant as unknown as Tenant).anniversary_day} to day ${requestedDay}. Reason: "${reason || 'No reason provided'}".`,
+      `${tenant.name} has requested to change their bill due date from day ${tenant.anniversary_day} to day ${requestedDay}. Reason: "${reason || 'No reason provided'}".`,
       `${siteUrl}/owner/due-date-requests`
     ).catch(console.error);
 
@@ -82,20 +82,20 @@ export async function approveDueDateChangeRequest(
     if (!user) return { error: 'Not authenticated.' };
 
     // Fetch the request with tenant info
-    const { data: request, error: fErr } = await (supabase
-      .from('due_date_change_requests') as any)
+    const { data: request, error: fErr } = await (supabase as any)
+      .from('due_date_change_requests')
       .select('*, tenant:tenants(*)')
       .eq('id', requestId)
       .single();
 
     if (fErr || !request) return { error: 'Request not found.' };
-    if ((request as any).status !== 'pending') return { error: 'Request is no longer pending.' };
+    if (request.status !== 'pending') return { error: 'Request is no longer pending.' };
 
-    const tenant_obj = (request as unknown as { tenant: Tenant }).tenant;
+    const tenant_obj = request.tenant;
 
     // Update request status
-    const { error: updateReqErr } = await (supabase
-      .from('due_date_change_requests') as any)
+    const { error: updateReqErr } = await (supabase as any)
+      .from('due_date_change_requests')
       .update({
         status: 'approved',
         owner_note: ownerNote || null,
@@ -108,12 +108,11 @@ export async function approveDueDateChangeRequest(
     // Update tenant's move_in_date to reflect new anniversary day
     // Calculate the new move_in_date
     const moveInDate = new Date(tenant_obj.move_in_date);
-    const currentDay = moveInDate.getDate();
     const newMoveInDate = new Date(moveInDate);
-    newMoveInDate.setDate((request as any).requested_anniversary_day);
+    newMoveInDate.setDate(request.requested_anniversary_day);
 
-    const { error: updateTenantErr } = await (supabase
-      .from('tenants') as any)
+    const { error: tUpdateErr } = await (supabase as any)
+      .from('tenants')
       .update({
         move_in_date: newMoveInDate.toISOString().split('T')[0],
       })
@@ -132,7 +131,6 @@ export async function approveDueDateChangeRequest(
 
     if (email) {
       try {
-        const dayString = String(request.requested_anniversary_day).padStart(2, '0');
         await sendEmail({
           to: email,
           subject: 'Due Date Change Approved ✅',
@@ -173,20 +171,20 @@ export async function rejectDueDateChangeRequest(
     if (!user) return { error: 'Not authenticated.' };
 
     // Fetch the request with tenant info
-    const { data: request, error: fErr } = await (supabase
-      .from('due_date_change_requests') as any)
+    const { data: request, error: fErr } = await (supabase as any)
+      .from('due_date_change_requests')
       .select('*, tenant:tenants(*)')
       .eq('id', requestId)
       .single();
 
     if (fErr || !request) return { error: 'Request not found.' };
-    if ((request as any).status !== 'pending') return { error: 'Request is no longer pending.' };
+    if (request.status !== 'pending') return { error: 'Request is no longer pending.' };
 
-    const tenant = (request as unknown as { tenant: Tenant }).tenant;
+    const tenant = request.tenant;
 
     // Update request status
-    const { error: updateErr } = await (supabase
-      .from('due_date_change_requests') as any)
+    const { error: updateErr } = await (supabase as any)
+      .from('due_date_change_requests')
       .update({
         status: 'rejected',
         owner_note: ownerNote || null,

@@ -153,32 +153,34 @@ export default async function OwnerOverviewPage() {
       </div>
 
       {/* Quick Links */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-        <div className="card">
-          <h3 style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.95rem' }}>Quick Actions</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        <div className="card" style={{ background: 'var(--bg-surface)' }}>
+          <h3 style={{ fontWeight: 700, marginBottom: '1.25rem', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ width: '4px', height: '16px', background: 'var(--brand-500)', borderRadius: '2px' }} />
+            Quick Actions
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             {[
-              { href: '/owner/quick-start', label: '🚀 Quick Start: Add Tenant + History', color: '#6366f1' },
-              { href: '/owner/payments', label: 'Review pending payments', color: '#f59e0b' },
-              { href: '/owner/meter-readings', label: 'Enter meter readings', color: '#6366f1' },
-
-              {href: '/owner/water-refills', label: 'Manage water refills', color: '#3b82f6' },
-              { href: '/owner/broadcast', label: '📢 Broadcast to all tenants', color: '#ef4444' },
-              { href: '/owner/tenants', label: 'Manage tenants', color: '#10b981' },
-              { href: '/owner/units', label: 'Manage units & properties', color: '#8b5cf6' },
-            ].map(({ href, label, color }) => (
+              { href: '/owner/quick-start', label: 'Quick Start', icon: '🚀', color: '#6366f1' },
+              { href: '/owner/payments', label: 'Payments', icon: '💳', color: '#f59e0b' },
+              { href: '/owner/meter-readings', label: 'Meters', icon: '⚡', color: '#6366f1' },
+              { href: '/owner/water-refills', label: 'Water', icon: '💧', color: '#3b82f6' },
+              { href: '/owner/broadcast', label: 'Broadcast', icon: '📢', color: '#ef4444' },
+              { href: '/owner/tenants', label: 'Tenants', icon: '👥', color: '#10b981' },
+            ].map(({ href, label, icon, color }) => (
               <a key={href} href={href} style={{
-                display: 'flex', alignItems: 'center', gap: '0.75rem',
-                padding: '0.75rem 1rem',
-                background: 'var(--bg-surface)',
+                display: 'flex', flexDirection: 'column', gap: '0.5rem',
+                padding: '1rem',
+                background: 'var(--bg-base)',
                 border: '1px solid var(--border)',
-                borderRadius: '0.5rem',
+                borderRadius: '0.75rem',
                 textDecoration: 'none',
                 color: 'var(--text-primary)',
-                fontSize: '0.875rem',
-                transition: 'border-color 0.15s',
-              }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                transition: 'var(--transition)',
+              }} className="hover-lift">
+                <span style={{ fontSize: '1.25rem', marginBottom: '0.25rem', color }}>{icon}</span>
                 {label}
               </a>
             ))}

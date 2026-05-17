@@ -98,6 +98,16 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
                 <span>Tank Refills ({unbilledRefills?.length ?? 0}x):</span>
                 <span style={{ fontWeight: 600 }}>{formatPeso((unbilledRefills ?? []).reduce((s, r) => s + (r.amount || 0), 0))}</span>
               </div>
+              {unbilledRefills && unbilledRefills.length > 0 && (
+                <div style={{ marginLeft: '0.5rem', marginTop: '0.25rem', borderLeft: '2px solid var(--border)', paddingLeft: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  {unbilledRefills.map(r => (
+                    <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <span>{formatDate(r.completed_at)}</span>
+                      <span>{formatPeso(r.amount || 0)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.25rem' }}>
                 * Electric/Metered water added during billing.
               </p>

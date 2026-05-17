@@ -67,7 +67,7 @@ export async function generateBill(tenantId: string) {
     // or just run sequentially since owner has full access.
     
     // Create bill
-    const { data: newBill, error: billErr } = await (supabase.from('bills') as any).insert({
+    const { data: newBill, error: billErr } = await (supabase as any).from('bills').insert({
       tenant_id: tenantId,
       bill_date: billDate.toISOString().split('T')[0],
       period_label: pLabel,
@@ -84,7 +84,7 @@ export async function generateBill(tenantId: string) {
     if (billErr) throw new Error(billErr.message);
 
     // Update tenant balances
-    const { error: tUpdateErr } = await (supabase.from('tenants') as any).update({
+    const { error: tUpdateErr } = await (supabase as any).from('tenants').update({
       arrears: breakdown.totalDue, // Old arrears are now rolled into the new total_due
       credit_balance: Math.max(0, (tenant as unknown as Tenant).credit_balance - breakdown.creditApplied),
     }).eq('id', tenantId);
@@ -92,7 +92,7 @@ export async function generateBill(tenantId: string) {
 
     // Update water refills to billed
     if (waterRefills.length > 0) {
-      const { error: wrErr } = await (supabase.from('water_refills') as any)
+      const { error: wrErr } = await (supabase as any).from('water_refills')
         .update({ billed: true })
         .in('id', waterRefills.map(r => r.id));
       if (wrErr) throw new Error(wrErr.message);

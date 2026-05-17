@@ -1,17 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Megaphone, Send, History, CheckCircle2, Pin, Trash2, Edit, Save, X } from 'lucide-react';
+import { Megaphone, Send, History, CheckCircle2, Pin, Trash2, Edit, Save, X, Image as ImageIcon, Upload } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { broadcastMessageToTenants } from '@/app/actions/notifications';
 import { deleteAnnouncement, updateAnnouncement } from '@/app/actions/announcements';
 import { formatDate } from '@/utils/format';
+import { compressImage } from '@/utils/image';
 import type { Announcement } from '@/types/database.types';
 
 export default function BroadcastPage() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [isPinned, setIsPinned] = useState(false);
+  const [expiresInDays, setExpiresInDays] = useState<number | null>(7);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<string>('all');
   const [properties, setProperties] = useState<{id: string, name: string}[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -32,12 +35,33 @@ export default function BroadcastPage() {
 
   async function loadData() {
     const supabase = await createClient();
-    const [{ data: props }, { data: anns }] = await Promise.all([
-      supabase.from('properties').select('id, name').order('name'),
-      supabase.from('announcements').select('*').order('created_at', { ascending: false })
+    const [{ data: props, error: propsErr }, { data: anns, error: annsErr }] = await Promise.all([
+      (supabase as any).from('properties').select('id, name').order('name'),
+      (supabase as any).from('announcements').select('*').order('created_at', { ascending: false })
     ]);
+    if (propsErr) console.error('Props Err:', propsErr);
+    if (annsErr) console.error('Anns Err:', annsErr);
     if (props) setProperties(props);
     if (anns) setAnnouncements(anns);
+  }
+
+  async function uploadFile(file: File): Promise<string> {
+    const supabase = createClient();
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    const filePath = `images/${fileName}`;
+
+    const { error: uploadError, data } = await supabase.storage
+      .from('announcements')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('announcements')
+      .getPublicUrl(data.path);
+
+    return publicUrl;
   }
 
   async function handleSend(e: React.FormEvent) {
@@ -50,13 +74,21 @@ export default function BroadcastPage() {
     setSuccess(false);
 
     try {
-      const res = await broadcastMessageToTenants(title, message, isPinned, selectedProperty === 'all' ? null : selectedProperty);
+      let imageUrl = null;
+      if (imageFile) {
+        const compressed = await compressImage(imageFile);
+        imageUrl = await uploadFile(compressed);
+      }
+
+      const res = await broadcastMessageToTenants(title, message, isPinned, selectedProperty === 'all' ? null : selectedProperty, imageUrl, expiresInDays);
       if (res?.error) throw new Error(res.error);
       
       setSuccess(true);
       setTitle('');
       setMessage('');
       setIsPinned(false);
+      setExpiresInDays(7);
+      setImageFile(null);
       loadData(); // Refresh history
     } catch (err) {
       setError((err as Error).message);
@@ -104,8 +136,27 @@ export default function BroadcastPage() {
   return (
     <div className="animate-enter">
       <div className="page-header">
-        <h1>Broadcast Messaging</h1>
-        <p>Send an instant Push Notification and Email to all active tenants.</p>
+        <h1>Broadcast Dashboard</h1>
+        <p>Manage announcements and instant notifications for all active tenants.</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="stat-card">
+          <p className="section-title">Total Broadcasts</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{announcements.length}</p>
+        </div>
+        <div className="stat-card">
+          <p className="section-title">Global Notices</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{announcements.filter(a => !a.property_id).length}</p>
+        </div>
+        <div className="stat-card">
+          <p className="section-title">Building Specific</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{announcements.filter(a => a.property_id).length}</p>
+        </div>
+        <div className="stat-card">
+          <p className="section-title">Pinned Items</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b' }}>{announcements.filter(a => a.is_pinned).length}</p>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
@@ -169,13 +220,49 @@ export default function BroadcastPage() {
               <textarea 
                 id="b-msg"
                 className="input"
-                style={{ minHeight: '120px', resize: 'vertical' }}
-                placeholder="Write your detailed message here..."
+                style={{ minHeight: '120px', resize: 'vertical', fontFamily: 'monospace' }}
+                placeholder="Write your detailed message here... (Markdown supported)"
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div>
+              <label className="label">Image Attachment (Optional)</label>
+              <div style={{
+                border: '1px dashed var(--border)', borderRadius: '0.5rem', padding: '1rem',
+                textAlign: 'center', background: 'var(--bg-surface)'
+              }}>
+                <input type="file" accept="image/*" id="announcement-image"
+                  onChange={e => setImageFile(e.target.files?.[0] || null)}
+                  style={{ display: 'none' }} disabled={loading} />
+                <label htmlFor="announcement-image" style={{ cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                  <Upload size={20} color="var(--text-muted)" />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    {imageFile ? imageFile.name : 'Click to attach an image'}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="label" htmlFor="b-expires">Auto-Delete Duration</label>
+              <select 
+                id="b-expires"
+                className="input"
+                value={expiresInDays === null ? 'null' : expiresInDays.toString()}
+                onChange={e => setExpiresInDays(e.target.value === 'null' ? null : parseInt(e.target.value))}
+                disabled={loading}
+              >
+                <option value="1">1 Day</option>
+                <option value="3">3 Days</option>
+                <option value="7">7 Days (Default)</option>
+                <option value="14">14 Days</option>
+                <option value="30">30 Days</option>
+                <option value="null">Never Delete</option>
+              </select>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-base)', padding: '0.75rem', borderRadius: '0.5rem', border: isPinned ? '1px solid #f59e0b' : '1px solid var(--border)', transition: 'all 0.2s' }}>
@@ -229,10 +316,11 @@ export default function BroadcastPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {announcements.map(ann => (
-                  <div key={ann.id} className="card-sm" style={{ 
+                  <div key={ann.id} className="card-sm hover-lift" style={{ 
                     position: 'relative', 
-                    borderLeft: ann.is_pinned ? '3px solid #f59e0b' : '3px solid var(--border)',
-                    padding: '1rem'
+                    borderLeft: ann.is_pinned ? '3px solid var(--warning)' : '3px solid var(--border)',
+                    padding: '1.25rem',
+                    background: ann.is_pinned ? 'rgba(245,158,11,0.02)' : 'var(--bg-surface)'
                   }}>
                     {editingId === ann.id ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -283,6 +371,12 @@ export default function BroadcastPage() {
                           </div>
                         </div>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.6rem', lineHeight: 1.4 }}>{ann.content}</p>
+                        {ann.image_url && (
+                          <div style={{ marginBottom: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={ann.image_url} alt="Attachment" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+                          </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{formatDate(ann.created_at)}</span>
                           <span style={{ fontSize: '0.7rem', color: '#6366f1', background: 'rgba(99,102,241,0.08)', padding: '0.1rem 0.4rem', borderRadius: '1rem', fontWeight: 500 }}>

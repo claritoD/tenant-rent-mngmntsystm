@@ -22,6 +22,8 @@ export interface Unit {
   map_location_url: string | null;
   property_id: string | null;
   created_at: string;
+  // joined
+  property?: Property;
 }
 
 export interface Announcement {
@@ -32,6 +34,9 @@ export interface Announcement {
   is_pinned: boolean;
   property_id: string | null;
   created_at: string;
+  image_url: string | null;
+  attachment_url: string | null;
+  expires_at: string | null;
 }
 
 export interface Tenant {
@@ -52,6 +57,7 @@ export interface Tenant {
   start_electric_reading: number;
   start_water_reading: number;
   is_active: boolean;
+  last_read_announcements_at: string;
   created_at: string;
   // joined
   unit?: Unit;

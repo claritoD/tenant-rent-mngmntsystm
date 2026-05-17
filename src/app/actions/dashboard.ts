@@ -12,14 +12,17 @@ export async function getOrCreateDashboardSettings() {
     if (!user || user.user_metadata?.role !== 'owner') return { error: 'Unauthorized.' };
 
     // Try to get existing settings
-    let { data: settings, error: getErr } = await (supabase
-      .from('owner_dashboard_settings') as any)
+    const result = await (supabase as any)
+      .from('owner_dashboard_settings')
       .select('*')
       .eq('owner_id', user.id)
-      .single();
+      .maybeSingle();
+      
+    let settings = result.data;
+    const error = result.error;
 
     // If not found, create default settings
-    if (getErr || !settings) {
+    if (error || !settings) {
       const defaultSettings = {
         owner_id: user.id,
         show_revenue_chart: true,
@@ -33,8 +36,8 @@ export async function getOrCreateDashboardSettings() {
         show_due_date_pending: true,
       };
 
-      const { data: created, error: createErr } = await (supabase
-        .from('owner_dashboard_settings') as any)
+      const { data: created, error: createErr } = await (supabase as any)
+        .from('owner_dashboard_settings')
         .insert([defaultSettings])
         .select()
         .single();
@@ -57,8 +60,8 @@ export async function updateDashboardSettings(updates: Partial<OwnerDashboardSet
     
     if (!user || user.user_metadata?.role !== 'owner') return { error: 'Unauthorized.' };
 
-    const { data: settings, error: updateErr } = await (supabase
-      .from('owner_dashboard_settings') as any)
+    const { data: settings, error: updateErr } = await (supabase as any)
+      .from('owner_dashboard_settings')
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -91,17 +94,13 @@ export async function getDashboardAnalytics() {
       { data: paymentsData },
       { data: waterRefillsData },
       { data: dueDateRequestsData },
-      { data: maintenanceData },
-      { data: expensesData },
     ] = await Promise.all([
-      (supabase.from('units') as any).select('id'),
-      (supabase.from('tenants') as any).select('id, is_active, unit_id, arrears, credit_balance'),
-      (supabase.from('bills') as any).select('id, total_due, is_paid, rent_amount, electric_amount, water_amount, created_at'),
-      (supabase.from('payments') as any).select('amount, status, verified_at, date_submitted'),
-      (supabase.from('water_refills') as any).select('status, requested_at'),
-      (supabase.from('due_date_change_requests') as any).select('status, requested_at'),
-      (supabase.from('maintenance_tickets') as any).select('id, status'),
-      (supabase.from('expenses') as any).select('id, amount, created_at'),
+      supabase.from('units').select('id'),
+      supabase.from('tenants').select('id, is_active, unit_id, arrears, credit_balance'),
+      supabase.from('bills').select('id, total_due, is_paid, rent_amount, electric_amount, water_amount, created_at'),
+      supabase.from('payments').select('amount, status, verified_at, date_submitted'),
+      supabase.from('water_refills').select('status, requested_at'),
+      supabase.from('due_date_change_requests').select('status, requested_at'),
     ]);
 
     const units = (unitsData || []) as { id: string }[];

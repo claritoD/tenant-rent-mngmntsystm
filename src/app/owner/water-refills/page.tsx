@@ -53,6 +53,7 @@ export default async function WaterRefillsPage() {
                     <td>
                       <WaterRefillAction 
                         requestId={r.id} 
+                        tenantId={r.tenant_id}
                         tenantName={tenant?.name ?? 'Tenant'} 
                         tankRate={tenant?.water_tank_rate || 0} 
                       />

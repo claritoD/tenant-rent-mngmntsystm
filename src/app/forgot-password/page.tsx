@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
           </Link>
 
           <h2 style={{ color: '#f1f5f9', fontWeight: 600, marginBottom: '0.5rem', fontSize: '1.25rem' }}>Forgot password?</h2>
-          <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Enter your email address and we'll send you a link to reset your password.</p>
+          <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Enter your email address and we&apos;ll send you a link to reset your password.</p>
           
           {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '0.5rem', padding: '0.75rem 1rem', color: '#fca5a5', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</div>}
           

@@ -1,20 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { resolveWaterRefill } from '@/app/actions/waterrefill';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatPeso } from '@/utils/format';
 
 interface Props {
   requestId: string;
+  tenantId: string;
   tenantName: string;
   tankRate: number;
 }
 
-export function WaterRefillAction({ requestId, tenantName, tankRate }: Props) {
+export function WaterRefillAction({ requestId, tenantId, tenantName, tankRate }: Props) {
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
   const router = useRouter();
 
   async function handleComplete() {
@@ -22,13 +22,8 @@ export function WaterRefillAction({ requestId, tenantName, tankRate }: Props) {
     
     setLoading(true);
     try {
-      const { error } = await supabase.from('water_refills').update({
-        status: 'completed',
-        amount: tankRate,
-        completed_at: new Date().toISOString(),
-      }).eq('id', requestId);
-
-      if (error) throw error;
+      const { error } = await resolveWaterRefill(requestId, 'completed', tankRate, tenantId, tenantName);
+      if (error) throw new Error(error);
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -43,12 +38,8 @@ export function WaterRefillAction({ requestId, tenantName, tankRate }: Props) {
     
     setLoading(true);
     try {
-      const { error } = await supabase.from('water_refills').update({
-        status: 'cancelled',
-        completed_at: new Date().toISOString(),
-      }).eq('id', requestId);
-
-      if (error) throw error;
+      const { error } = await resolveWaterRefill(requestId, 'cancelled', undefined, tenantId, tenantName);
+      if (error) throw new Error(error);
       router.refresh();
     } catch (err) {
       console.error(err);

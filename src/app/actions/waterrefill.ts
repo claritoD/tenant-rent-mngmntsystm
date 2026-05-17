@@ -82,3 +82,40 @@ export async function recordManualWaterRefill(tenantId: string) {
     return { error: (err as Error).message };
   }
 }
+
+/** Resolves an existing water refill request (called from WaterRefillAction) */
+export async function resolveWaterRefill(requestId: string, status: 'completed' | 'cancelled', amount?: number, tenantId?: string, tenantName?: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.user_metadata?.role !== 'owner') throw new Error('Unauthorized.');
+
+    const updateData: any = {
+      status,
+      completed_at: new Date().toISOString(),
+    };
+    if (amount !== undefined) {
+      updateData.amount = amount;
+    }
+
+    const { error } = await supabase.from('water_refills').update(updateData).eq('id', requestId);
+    if (error) throw error;
+
+    // Send notification if completed and we have tenant details
+    if (status === 'completed' && tenantId) {
+      const { triggerTenantAlerts } = await import('@/app/actions/notifications');
+      await triggerTenantAlerts(
+        tenantId,
+        'Water Tank Refilled 💧',
+        'Your water tank has been successfully refilled.',
+        '/tenant'
+      ).catch(console.error);
+    }
+
+    revalidatePath('/owner/water-refills');
+    if (tenantId) revalidatePath(`/owner/tenants/${tenantId}`);
+    return { success: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}

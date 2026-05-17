@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   { href: '/owner/maintenance',  label: 'Maintenance',    icon: Wrench },
   { href: '/owner/expenses',     label: 'Expenses',       icon: Receipt },
   { href: '/owner/due-date-requests', label: 'Due Date Requests', icon: Calendar },
-  { href: '/owner/broadcast',    label: 'Broadcast',      icon: Megaphone },
+  { href: '/owner/broadcast',    label: 'Broadcast Dashboard', icon: Megaphone },
   { href: '/owner/settings',     label: 'Settings',       icon: Settings },
 ];
 
@@ -94,10 +94,11 @@ export function OwnerSidebar({ isMobile, onNav }: { isMobile?: boolean, onNav?: 
                 fontWeight: isActive ? 600 : 400,
                 fontSize: '0.9rem',
                 color: isActive ? '#fff' : 'var(--text-secondary)',
-                background: isActive ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'transparent',
-                boxShadow: isActive ? '0 2px 12px rgba(99,102,241,0.35)' : 'none',
-                transition: 'all 0.15s ease',
+                background: isActive ? 'linear-gradient(135deg, var(--brand-600), var(--brand-500))' : 'transparent',
+                boxShadow: isActive ? 'var(--shadow-brand)' : 'none',
+                transition: 'var(--transition)',
               }}
+              className={!isActive ? 'sidebar-item-hover' : ''}
             >
               <Icon size={17} />
               {label}

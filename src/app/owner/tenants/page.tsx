@@ -55,7 +55,7 @@ export default async function TenantsPage() {
                 <td style={{ color: 'var(--text-secondary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand-600)' }}>
-                      {(t.unit as any)?.property?.name ?? 'No Building'}
+                      {t.unit?.property?.name ?? 'No Building'}
                     </span>
                     <span>{(t.unit as { unit_name: string } | null)?.unit_name ?? '—'}</span>
                   </div>

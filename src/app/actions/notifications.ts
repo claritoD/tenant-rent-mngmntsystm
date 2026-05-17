@@ -21,7 +21,7 @@ function getAdminSupabase() {
 }
 
 /** Saves a push subscription for the current user. Supports multiple devices. */
-export async function savePushSubscription(subscription: any) {
+export async function savePushSubscription(subscription: Record<string, unknown>) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -46,20 +46,37 @@ export async function savePushSubscription(subscription: any) {
  * Sends a broadcast message to all active tenants via Push and Email.
  * Non-blocking, runs in background via Promise.allSettled.
  */
-export async function broadcastMessageToTenants(title: string, message: string, isPinned: boolean = false, propertyId: string | null = null) {
+export async function broadcastMessageToTenants(title: string, message: string, isPinned: boolean = false, propertyId: string | null = null, imageUrl: string | null = null, expiresInDays: number | null = null, attachmentUrl: string | null = null) {
   try {
     const adminSupabase = getAdminSupabase();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentseasy.vercel.app';
 
     // 1. Log the announcement in the DB
     const { data: { user: owner } } = await (await createClient()).auth.getUser();
-    await adminSupabase.from('announcements').insert({
+    let expires_at = null;
+    if (expiresInDays !== null) {
+      const d = new Date();
+      d.setDate(d.getDate() + expiresInDays);
+      expires_at = d.toISOString();
+    }
+
+    const { error: insertErr } = await adminSupabase.from('announcements').insert({
       sender_id: owner?.id,
       title,
       content: message,
       is_pinned: isPinned,
-      property_id: propertyId
+      property_id: propertyId,
+      image_url: imageUrl,
+      attachment_url: attachmentUrl,
+      expires_at
     });
+    if (insertErr) throw insertErr;
+    
+    // Trigger lazy cleanup of old announcements
+    (async () => {
+      const { error: rpcErr } = await adminSupabase.rpc('cleanup_expired_announcements');
+      if (rpcErr) console.error('Cleanup error:', rpcErr);
+    })();
 
     // 2. Fetch targeted active tenants
     let query = adminSupabase
@@ -112,22 +129,24 @@ export async function broadcastMessageToTenants(title: string, message: string, 
       .filter(Boolean) as string[];
 
     if (activeTenantEmails.length > 0) {
-      activeTenantEmails.forEach(email => {
-        sendEmail({
-          to: email,
-          subject: title,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <h2 style="color: #6366f1;">Important Announcement</h2>
-              <p style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0;">${title}</p>
-              <p style="color: #475569; font-size: 15px; line-height: 1.6;">${message}</p>
-              <a href="${siteUrl}/tenant" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
-                Go to Tenant Portal
-              </a>
-            </div>
-          `
-        }).catch(console.error);
-      });
+      await Promise.allSettled(
+        activeTenantEmails.map(email => 
+          sendEmail({
+            to: email,
+            subject: title,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <h2 style="color: #6366f1;">Important Announcement</h2>
+                <p style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 0;">${title}</p>
+                <p style="color: #475569; font-size: 15px; line-height: 1.6;">${message}</p>
+                <a href="${siteUrl}/tenant" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                  Go to Tenant Portal
+                </a>
+              </div>
+            `
+          })
+        )
+      );
     }
 
     return { success: true };
@@ -222,5 +241,79 @@ export async function triggerOwnerAlerts(title: string, message: string, url: st
   await Promise.allSettled([
     sendWebPushToOwner(title, message, fullUrl),
     sendEmailAlertToOwner(title, message, fullUrl),
+  ]);
+}
+
+/** Sends a web push notification to a specific tenant */
+async function sendWebPushToTenant(tenantId: string, title: string, body: string, url: string) {
+  try {
+    const adminSupabase = getAdminSupabase();
+    const { data: subs } = await adminSupabase
+      .from('push_subscriptions')
+      .select('id, subscription')
+      .eq('user_id', tenantId);
+
+    if (!subs || subs.length === 0) return;
+
+    const payload = JSON.stringify({ title, body, url, icon: '/icon-192.png' });
+
+    for (const sub of subs) {
+      try {
+        await webpush.sendNotification(
+          sub.subscription as unknown as webpush.PushSubscription,
+          payload
+        );
+      } catch (e: unknown) {
+        const status = (e as { statusCode?: number }).statusCode;
+        if (status === 410 || status === 404) {
+          await adminSupabase.from('push_subscriptions').delete().eq('id', sub.id);
+        } else {
+          console.error('Push send error (tenant):', e);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('sendWebPushToTenant failed:', err);
+  }
+}
+
+/** Sends an email alert directly to a specific tenant */
+async function sendEmailAlertToTenant(tenantId: string, subject: string, body: string, url: string) {
+  try {
+    const adminSupabase = getAdminSupabase();
+    const { data: authData } = await adminSupabase.auth.admin.getUserById(tenantId);
+    const tenantEmail = authData?.user?.email;
+    if (!tenantEmail) return;
+
+    await sendEmail({
+      to: tenantEmail,
+      subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #6366f1;">${subject}</h2>
+          <p style="color: #334155; font-size: 15px;">${body}</p>
+          <a href="${url}" style="display: inline-block; margin-top: 24px; padding: 10px 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            View Dashboard
+          </a>
+          <p style="margin-top: 24px; font-size: 12px; color: #94a3b8;">This is an automated alert from your landlord via RentsEasy.</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error('sendEmailAlertToTenant failed:', err);
+  }
+}
+
+/**
+ * Sends both web push AND email alert to a specific tenant.
+ * Non-blocking.
+ */
+export async function triggerTenantAlerts(tenantId: string, title: string, message: string, url: string) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rentease.vercel.app';
+  const fullUrl = url.startsWith('http') ? url : `${siteUrl}${url}`;
+
+  await Promise.allSettled([
+    sendWebPushToTenant(tenantId, title, message, fullUrl),
+    sendEmailAlertToTenant(tenantId, title, message, fullUrl),
   ]);
 }

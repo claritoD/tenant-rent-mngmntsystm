@@ -35,13 +35,15 @@ export function PushNotificationToggle() {
   const [swError, setSwError] = useState<string | null>(null);
 
   useEffect(() => {
-    const ios = isIosDevice();
-    const standalone = isInStandaloneMode();
-    setIsIOS(ios);
-    setIsStandalone(standalone);
+    Promise.resolve().then(() => {
+      setIsIOS(isIosDevice());
+      setIsStandalone(isInStandaloneMode());
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        setIsSupported(true);
+      }
+    });
 
     if ('serviceWorker' in navigator && 'PushManager' in window) {
-      setIsSupported(true);
 
       navigator.serviceWorker.register('/sw.js')
         .then(async (reg) => {
